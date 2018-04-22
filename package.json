@@ -1,0 +1,30 @@
+{
+  "name": "node-red-contrib-subprojects",
+  "version": "0.0.1",
+  "description": "Subprojects allows projects to use other project parts as dependencies.",
+  "author": "Stephen J. Carnam <steveorevo@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "node-red",
+    "dependencies",
+    "subprojects",
+    "collaborate",
+    "subflows",
+    "publish",
+    "sharing",
+    "flows"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Steveorevo/node-red-contrib-subprojects.git"
+  },
+  "dependencies": {
+    "string": "https://github.com/Steveorevo/string.js/archive/3.3.6.tar.gz",
+    "glob": "^7.1.2"
+  },
+  "node-red": {
+    "nodes": {
+      "subprojects": "subprojects/subprojects.js"
+    }
+  }
+}

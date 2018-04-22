@@ -1,0 +1,302 @@
+<style>
+  #project-settings-tab-publish .publish-group-list-container ol .red-ui-editableList-item-content {
+    padding: 5px 28px;
+  }
+  #project-settings-tab-publish .red-ui-editableList-border {
+    padding: 0px;
+  }
+  #project-settings-tab-publish h3 .editor-button {
+    float: right;
+  }
+  #project-settings-tab-publish input[type="checkbox"] {
+    width: auto;
+  }
+  .publish .red-ui-editableList-container {
+      padding: 0;
+      min-height: 250px;
+      height: auto;
+  }
+  .publish-tab-list {
+      min-height: 250px;
+      height: auto;
+  }
+  .publish-tab-list li {
+      padding: 0;
+  }
+  .publish-tab-list-item {
+      border-radius: 4px;
+      color: #333;
+  }
+  .publish-list-header {
+      cursor: pointer;
+      position:relative;
+      color: #666;
+      padding:3px;
+      white-space: nowrap;
+  }
+  .publish-list-header:hover {
+      color: #333;
+  }
+  .publish-tab-list-header {
+      background: #f3f3f3;
+      padding:5px;
+  }
+  .publish-list-chevron {
+      width: 15px;
+      text-align: center;
+      margin: 3px 5px 3px 5px;
+  }
+  .publish-tab-list-item .red-ui-editableList-container {
+      border-radius: 0;
+      border: none;
+      height: auto !important;
+      min-height: unset;
+  }
+  .publish-list-header:hover>.publish-list-handle,
+  .publish-list-header:hover>.publish-list-header-button-group {
+      opacity: 1;
+  }
+  .publish-tab-list-header>.publish-list-chevron  {
+      margin-left: 0px;
+      transition: transform 0.2s ease-in-out;
+  }
+  .publish-group-list-header>.publish-list-chevron {
+      margin-left: 20px;
+      transition: transform 0.2s ease-in-out;
+  }
+  .publish-icon {
+      margin-right: 10px;
+  } 
+  ol.publish-files-list div.red-ui-editableList-item-content i.fa.fa-folder-o {
+       margin: 1px 1px 0 3px;
+      font-size: large;
+  }
+  ol.publish-files-list div.red-ui-editableList-item-content i.fa.fa-file-o {
+      margin: 1px 1px 0 3px;
+  }
+</style>
+<script type="text/javascript">
+  (function($) {
+    RED.nodes.registerType('subprojects', {
+      category: 'config',
+      onpaletteadd: function() {
+
+        //setTimeout(function() {
+          //console.log("line 12");
+          //console.log($("#sidebar-content > div:nth-child(1) > div > div.sidebar-node-info-stack.red-ui-stack > div:nth-child(1) > div:nth-child(2) > div > table > tbody > tr:nth-child(1) > td:nth-child(2) > button"));
+        //}, 1000);
+      }
+    });
+
+    RED.events.on("editor:open", function() {
+      setTimeout(function() {
+        // Append Publish option to project settings
+        var ul = $("#red-ui-tab-project-settings-tab-settings").parent();
+        if (ul.length != 0) {
+
+          // Append tab
+          var html = '<li class="red-ui-tab" id="red-ui-tab-project-settings-tab-publish">';
+          html += '<a href="#project-settings-tab-publish" class="red-ui-tab-label" title="Publish">';
+          html += '<span class="bidiAware" dir="">Publish</span></a></li>';
+          ul.append(html);
+
+          // Append content
+          function buildSection(name, label) {
+            var html = '<li>';
+            html += '  <div class="red-ui-editableList-item-content publish-tab-list-item">';
+            html += '    <div class="publish-list-header publish-tab-list-header">';
+            html += '      <i class="fa fa-angle-down publish-list-chevron" style=""></i>';
+            html += '      <span class="publish-title">' + label + '</span>';
+            html += '    </div>';
+            html += '    <div class="publish-group-list-container" style="display: block;">';
+            html += '      <div class="red-ui-editableList">';
+            html += '        <div class="red-ui-editableList-border red-ui-editableList-container" style="min-height: 10px; max-height: none; height: 10px;">';
+            html += '          <ol class="publish-' + name + '-list"></ol>';
+            html += '        </div>';
+            html += '      </div>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '</li>';
+            return html;
+          }
+          var div = $("#user-settings-tabs-content");
+          html = '<div id="project-settings-tab-publish" class="project-settings-tab-pane node-help" style="display: none;">';
+          html += '  <h3>Manifest</h3>';
+          html += '  <div class="user-settings-section">';
+          html += '    <div class="red-ui-editableList">';
+          html += '      <div id="project-settings-publish-list" class="red-ui-editableList-border red-ui-editableList-container" style="overflow-y: scroll;">';
+          html += '        <ol class="publish-tab-list red-ui-editableList-list" style="min-height: 0px; height: auto;">';
+          html += buildSection("subflows", "Subflows");
+          html += buildSection("tabs", "Tabs");
+          html += buildSection("files", "Files");
+          html += '        </ol>';
+          html += '      </div>';
+          html += '    </div>';
+          html += '  </div>';
+          html += '</div>';
+          div.append(html);
+          
+          // Implement tab selection behavior
+          ul.children("li").each(function() {
+            $(this).on("mousedown", "a.red-ui-tab-label", function() {
+              if ($(this).attr("href") == "#project-settings-tab-publish") {
+                ul.children("li").removeClass("active");
+                $(this).parent().addClass("active");
+                div.children("div.project-settings-tab-pane").hide();
+                $("#project-settings-tab-publish").show();
+              }else{
+                $(this).parent().removeClass("active");
+                $("#project-settings-tab-publish").hide();
+              }
+            });
+          });
+          
+          // Implement list behavior
+          function createEditableList(name) {
+            $("ol.publish-" + name + "-list").editableList({
+              addItem: function(row, index, data) {
+                var id = data.id.replace(/\./g,'-');
+                $(row).html('<label for="' + id + '"><input id="' + id + '" type="checkbox" ' + data.checked + '> ' + data.name + '</label>');
+              },
+              addButton: false,
+              height: 100
+            });
+            return {
+              addItem: function(data) {
+                $("ol.publish-" + name + "-list").editableList('addItem', data);
+              }
+            }
+          }
+          var subflowsList = createEditableList("subflows");
+          var tabsList = createEditableList("tabs");
+          var filesList = createEditableList("files");
+
+          // Resize tab content
+          $(window).resize(function() {
+            $("#project-settings-publish-list").css("max-height", $("#project-settings-tab-publish").height() - 50 + "px");
+          });
+          $(".publish-list-header").click(function() {
+            var chevron = $(this).children("i");
+            var container = $(this).next(".publish-group-list-container");
+            if (container.is(":visible")) {
+              chevron.css({"transform":"rotate(-90deg)"});
+              container.slideUp();
+            }else{
+              chevron.css({"transform":"rotate(0deg)"});
+              container.slideDown();
+            }
+          });
+
+          // Query for current subflows, files, and tabs
+          var origPublish = {};
+          var q = "subprojects?project=" + RED.settings.project.name;
+          q += "&cred=" + RED.settings.project.files.credentials;
+          q += "&flow=" + RED.settings.project.files.flow;
+
+          $.getJSON(q, function(publish) {
+            origPublish = publish;
+
+            // List subflows, tabs, and files
+            publish.subflows.forEach(function(s) {
+              subflowsList.addItem({name:s.name, id:s.id, checked:s.checked});
+            });
+            publish.tabs.forEach(function(t) {
+              tabsList.addItem({name:t.label, id:t.id, checked:t.checked});
+            });
+            publish.files.forEach(function(f) {
+              var name = f.name;
+              if (f.isDirectory) {
+                name = '<i class="fa fa-folder-o"></i> ' + name;
+              }else{
+                name = '<i class="fa fa-file-o"></i> ' + name;
+              }
+
+              // Indent based on depth of branch
+              var indent = "";
+              publish.files.forEach(function(d) {
+                if (f.path.indexOf(d.path) > -1 && f.path != d.path) {
+                  indent += "&nbsp; &nbsp; &nbsp;";
+                }
+              });
+              name = indent + name;
+              filesList.addItem({name:name, id:f.id, checked: f.checked});
+            });
+          });
+          
+          // Intercept OK button
+          $("#node-dialog-ok").click(function() { 
+            var publish = JSON.parse(JSON.stringify(origPublish));
+            publish.subflows.forEach(function(s) {
+              if ($("#project-settings-tab-publish #" + s.id.replace(/\./g,'-')).prop("checked")) {
+                s.checked = "checked";
+              }else{
+                s.checked = "";
+              }
+            });
+            publish.tabs.forEach(function(t) {
+              if ($("#project-settings-tab-publish #" + t.id.replace(/\./g,'-')).prop("checked")) {
+                t.checked = "checked";
+              }else{
+                t.checked = "";
+              }
+            });
+            publish.files.forEach(function(f) {
+              if ($("#project-settings-tab-publish #" + f.id).prop("checked")) {
+                f.checked = "checked";
+              }else{
+                f.checked = "";
+              }
+            });
+
+            // Check for changes
+            if (JSON.stringify(publish) == JSON.stringify(origPublish)) return;
+
+            // Total HACK, temp. suppress project switch/reload notifications to get latest package.json loaded
+            var notify = RED.notify;
+            RED.notify = function() {
+              if (arguments[0].toString().indexOf(RED.settings.project.name) != -1) {
+                RED.notify = notify;
+                RED.notify("The project's package.json has been modified on the server and the page must be reloaded.", {
+                  type: "warning",
+                  modal: true,
+                  fixed: true,
+                  buttons: [
+                  {
+                    text: "Reload",
+                    click: function() {
+                      location.reload();
+                    }
+                  }]
+                });
+              }
+              return {close:function(){}};
+            };
+            $.ajax({
+              cache: false,
+              url: "subprojects?reload=true",
+              dataType: "json",
+              method: "POST",
+              data: publish
+            }).done(function() {
+              console.log(arguments);
+            }).error(function() {
+              RED.notify = notify;
+              RED.notify(arguments[0]);
+            });
+          });
+        }
+      }, 1);     
+    });
+  })(jQuery);
+</script>
+<script type="text/x-red" data-template-name="subprojects">
+  testing...
+</script>
+<script type="text/x-red" data-help-name="subprojects">
+  <p>Help...</p>
+
+  <h3>References</h3>
+  <ul>
+       <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-subprojects" target=_blank>node-red-contrib-subprojects</a> project on GitHub.</li>
+   </ul>
+</script>
