@@ -104,8 +104,8 @@ module.exports = function(RED) {
           files: [],
           tabs: []
         };
-        if (fs.existsSync(manifestFile)) {
-          var sCode = S(fs.readFileSync(manifestFile, 'utf8'));
+        if (fs.existsSync(manifestFile + ".js")) {
+          var sCode = S(fs.readFileSync(manifestFile + ".js", 'utf8'));
           sCode = sCode.delLeftMost("    RED.subprojects.manifests.push(\n");
           sCode = sCode.getLeftMost("    );\n").toString();
 
@@ -137,8 +137,11 @@ module.exports = function(RED) {
     if (manifestFile == "") return;
     var fs = require("fs");
     if (JSON.stringify(publish).indexOf('"checked":"checked"') == -1) {
-      if (fs.existsSync(manifestFile)) {
-        fs.unlinkSync(manifestFile);
+      if (fs.existsSync(manifestFile + ".js")) {
+        fs.unlinkSync(manifestFile + ".js");
+      }
+      if (fs.existsSync(manifestFile + ".html")) {
+        fs.unlinkSync(manifestFile + ".html");
       }
       return;
     }
@@ -157,7 +160,8 @@ module.exports = function(RED) {
 
     // Let's be multiuser friendly and swap userDir for ~
     sCode = S(sCode).replaceAll('"' + RED.settings.userDir, '"~').toString();
-    fs.writeFileSync(manifestFile, sCode);
+    fs.writeFileSync(manifestFile + ".js", sCode);
+    fs.writeFileSync(manifestFile + ".html", "<!-- silence is golden -->");
   }
   function updatePackageFile(publish) {
     /*
@@ -205,7 +209,7 @@ module.exports = function(RED) {
   RED.httpAdmin.get("/subprojects", RED.auth.needsPermission("subprojects.read"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
       projectFolder = RED.settings.userDir + "/projects/" + req.query.project;
-      manifestFile = projectFolder + "/manifest.js";
+      manifestFile = projectFolder + "/manifest";
       projectName = req.query.project;
       credFile = projectFolder + "/" + req.query.cred;
       flowFile = projectFolder + "/" + req.query.flow;
