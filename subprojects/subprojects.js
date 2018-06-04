@@ -108,12 +108,12 @@ module.exports = function(RED) {
           var sCode = S(fs.readFileSync(manifestFile, 'utf8'));
           sCode = sCode.delLeftMost("    RED.subprojects.manifests.push(\n");
           sCode = sCode.getLeftMost("    );\n").toString();
-      
+
           // Resolve userDir
           sCode = S(sCode).replaceAll('"~', '"' + RED.settings.userDir).toString();
           sav = JSON.parse(sCode);
         }
-        
+
         // Merge default with saved; purge obsolete, irrelevant saved items
         getDefaultManifest().then(function(man) {
           var tp = ["subflows", "files", "tabs"];
@@ -137,7 +137,9 @@ module.exports = function(RED) {
     if (manifestFile == "") return;
     var fs = require("fs");
     if (JSON.stringify(publish).indexOf('"checked":"checked"') == -1) {
-      fs.unlinkSync(manifestFile);
+      if (fs.existsSync(manifestFile)) {
+        fs.unlinkSync(manifestFile);
+      }
       return;
     }
     var S = require("string");
@@ -198,7 +200,7 @@ module.exports = function(RED) {
   }
   /*
    * Furnish Publish tab with current subflows, files, tabs, and their associated
-   * settings in the manifest.js file. 
+   * settings in the manifest.js file.
    */
   RED.httpAdmin.get("/subprojects", RED.auth.needsPermission("subprojects.read"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
