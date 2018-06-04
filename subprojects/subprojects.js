@@ -213,7 +213,6 @@ module.exports = function(RED) {
     }
   });
   RED.httpAdmin.post("/subprojects", RED.auth.needsPermission("subprojects.write"), function(req, res) {
-    // HACK because there's no way to reload a project; load a temp "subproject" and then come back to current
     writeManifestJS(JSON.parse(JSON.stringify(req.body)));
 
     // Modify/update our manifest.js file before reloading
@@ -222,26 +221,11 @@ module.exports = function(RED) {
       var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/localfilesystem/projects/index.js");
       var ap = projects.getActiveProject();
       var name = ap.name;
-      Project.delete(null, "_subproject_temp");
-      Project.create(null, {
-        name:"_subproject_temp",
-        summary: "",
-        files: {
-          flow: "_subproject_temp.json"
-        },
-        project: null,
-        user: null,
-        username: null
+      readManifestJS().then(function(publish) {
+          // Modify our package.json before reloading
+          updatePackageFile(publish)
       }).then(function() {
-        readManifestJS().then(function(publish) {
-          projects.setActiveProject(null, "_subproject_temp").then(function(){
-            // Modify our package.json before reloading
-            updatePackageFile(publish);
-            projects.setActiveProject(null, name).then(function() {
-              Project.delete(null, "_subproject_temp");
-            });
-          });
-        });
+        return projects.setActiveProject(null, name);
       });
     }
   });
