@@ -59,6 +59,7 @@ module.exports = function(RED) {
           aOmit.push(credFile.toLowerCase());
           aOmit.push(flowFile.toLowerCase());
           aOmit.push(projectFolder.toLowerCase() + "/package.json");
+          aOmit.push(projectFolder.toLowerCase() + "/manifest.html");
           aOmit.push(projectFolder.toLowerCase() + "/manifest.js");
           aOmit.push(projectFolder.toLowerCase() + "/readme.md");
           aOmit.push(projectFolder.toLowerCase() + "/.git");
