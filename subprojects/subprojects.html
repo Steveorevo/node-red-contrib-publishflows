@@ -226,6 +226,7 @@
           // Intercept OK button
           $("#node-dialog-ok").click(function() { 
             var publish = JSON.parse(JSON.stringify(origPublish));
+            publish.project = RED.settings.project.name;
             publish.subflows.forEach(function(s) {
               if ($("#project-settings-tab-publish #" + s.id.replace(/\./g,'-')).prop("checked")) {
                 s.checked = "checked";
