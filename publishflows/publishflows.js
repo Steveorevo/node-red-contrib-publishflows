@@ -1,5 +1,5 @@
 module.exports = function(RED) {
-  // function SubprojectsNode(config) {
+  // function publishFlowsNode(config) {
   //   RED.nodes.createNode(this, config);
   // }
 
@@ -13,7 +13,7 @@ module.exports = function(RED) {
   var files = null;
   var tabs = null;
 
-  function re_subprojects(e) {
+  function re_publishflows(e) {
     if (e.id != "runtime-deploy") return;
     subflows = [];
     files = [];
@@ -36,7 +36,7 @@ module.exports = function(RED) {
         });
       }
     });
-    console.log("re_subprojects " + JSON.stringify(e, 2));
+    console.log("re_publishflows " + JSON.stringify(e, 2));
   }
   function getDefaultManifest() {
     var man = {
@@ -107,7 +107,7 @@ module.exports = function(RED) {
         };
         if (fs.existsSync(manifestFile + ".js")) {
           var sCode = S(fs.readFileSync(manifestFile + ".js", 'utf8'));
-          sCode = sCode.delLeftMost("    RED.subprojects.manifests.push(\n");
+          sCode = sCode.delLeftMost("    RED.publishflows.manifests.push(\n");
           sCode = sCode.getLeftMost("    );\n").toString();
 
           // Resolve userDir
@@ -152,8 +152,8 @@ module.exports = function(RED) {
     sCode += " * This code is machine generated.\n";
     sCode += " */\n";
     sCode += "module.exports = function(RED) {\n";
-    sCode += "  if (typeof RED.subprojects != 'undefined') {\n";
-    sCode += "    RED.subprojects.manifests.push(\n";
+    sCode += "  if (typeof RED.publishflows != 'undefined') {\n";
+    sCode += "    RED.publishflows.manifests.push(\n";
     sCode += S(JSON.stringify(publish, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
     sCode += "\n    );\n";
     sCode += "  }\n";
@@ -207,7 +207,7 @@ module.exports = function(RED) {
    * Furnish Publish tab with current subflows, files, tabs, and their associated
    * settings in the manifest.js file.
    */
-  RED.httpAdmin.get("/subprojects", RED.auth.needsPermission("subprojects.read"), function(req, res) {
+  RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
       projectFolder = RED.settings.userDir + "/projects/" + req.query.project;
       manifestFile = projectFolder + "/manifest";
@@ -219,7 +219,7 @@ module.exports = function(RED) {
       });
     }
   });
-  RED.httpAdmin.post("/subprojects", RED.auth.needsPermission("subprojects.write"), function(req, res) {
+  RED.httpAdmin.post("/publishflows", RED.auth.needsPermission("publishflows.write"), function(req, res) {
     writeManifestJS(JSON.parse(JSON.stringify(req.body)));
 
     // Modify/update our manifest.js file before reloading
@@ -236,5 +236,5 @@ module.exports = function(RED) {
       });
     }
   });
-  RED.events.on("runtime-event", re_subprojects);
+  RED.events.on("runtime-event", re_publishflows);
 }

@@ -66,7 +66,7 @@
   }
   .publish-icon {
       margin-right: 10px;
-  } 
+  }
   ol.publish-files-list div.red-ui-editableList-item-content i.fa.fa-folder-o {
        margin: 1px 1px 0 3px;
       font-size: large;
@@ -77,7 +77,7 @@
 </style>
 <script type="text/javascript">
   (function($) {
-    RED.nodes.registerType('subprojects', {
+    RED.nodes.registerType('publishflows', {
       category: 'config',
       onpaletteadd: function() {
 
@@ -135,7 +135,7 @@
           html += '  </div>';
           html += '</div>';
           div.append(html);
-          
+
           // Implement tab selection behavior
           ul.children("li").each(function() {
             $(this).on("mousedown", "a.red-ui-tab-label", function() {
@@ -150,7 +150,7 @@
               }
             });
           });
-          
+
           // Implement list behavior
           function createEditableList(name) {
             $("ol.publish-" + name + "-list").editableList({
@@ -189,7 +189,7 @@
 
           // Query for current subflows, files, and tabs
           var origPublish = {};
-          var q = "subprojects?project=" + RED.settings.project.name;
+          var q = "publishflows?project=" + RED.settings.project.name;
           q += "&cred=" + RED.settings.project.files.credentials;
           q += "&flow=" + RED.settings.project.files.flow;
 
@@ -222,9 +222,9 @@
               filesList.addItem({name:name, id:f.id, checked: f.checked});
             });
           });
-          
+
           // Intercept OK button
-          $("#node-dialog-ok").click(function() { 
+          $("#node-dialog-ok").click(function() {
             var publish = JSON.parse(JSON.stringify(origPublish));
             publish.project = RED.settings.project.name;
             publish.subflows.forEach(function(s) {
@@ -274,7 +274,7 @@
             };
             $.ajax({
               cache: false,
-              url: "subprojects?reload=true",
+              url: "publishflows?reload=true",
               dataType: "json",
               method: "POST",
               data: publish
@@ -286,18 +286,18 @@
             });
           });
         }
-      }, 1);     
+      }, 1);
     });
   })(jQuery);
 </script>
-<script type="text/x-red" data-template-name="subprojects">
+<script type="text/x-red" data-template-name="publishflows">
   testing...
 </script>
-<script type="text/x-red" data-help-name="subprojects">
+<script type="text/x-red" data-help-name="publishflows">
   <p>Help...</p>
 
   <h3>References</h3>
   <ul>
-       <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-subprojects" target=_blank>node-red-contrib-subprojects</a> project on GitHub.</li>
+       <li>The official <a href="https://github.com/Steveorevo/node-red-contrib-publishflows" target=_blank>node-red-contrib-publishflows</a> project on GitHub.</li>
    </ul>
 </script>
