@@ -12,7 +12,7 @@ module.exports = function(RED) {
   // Init vars
   var projectFolder = "";
   var projectName = "";
-
+  
   // Furnish publishflows info to publish panel
   RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
@@ -96,7 +96,7 @@ module.exports = function(RED) {
           // Omit credentials and flow files from listing
           var oFiles = [];
           var aOmit = [];
-          var package = JSON.parse(fs.readFileSync(projectFolder + "/package.json", 'utf8'));
+          var package = JSON.parse(fs.readFileSync(projectFolder + "/package.json"));
           aOmit.push(projectFolder.toLowerCase() + "/" + package["node-red"].settings.credentialsFile);
           aOmit.push(projectFolder.toLowerCase() + "/" + package["node-red"].settings.flowFile);
 
