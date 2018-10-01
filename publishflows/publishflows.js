@@ -1,119 +1,42 @@
 module.exports = function(RED) {
-  // function publishFlowsNode(config) {
-  //   RED.nodes.createNode(this, config);
-  // }
+/*
+   * Furnish Publish tab with current subflows, files, tabs, and their associated
+   * settings from the manifest.js file.
+   */
 
-  // Build list of publishable objects (tabs, subflows, and files)
+  // Requires
+  var glob = require("glob");
+  var S = require("string");
+  var fs = require("fs");
+
+  // Init vars
   var projectFolder = "";
-  var manifestFile = "";
   var projectName = "";
-  var credFile = "";
-  var flowFile = "";
-  var subflows = null;
-  var files = null;
-  var tabs = null;
 
-  function re_publishflows(e) {
-    if (e.id != "runtime-deploy") return;
-    subflows = [];
-    files = [];
-    tabs = [];
-
-    // Current current tabs and subflows
-    RED.nodes.eachNode(function(n) {
-      if (n.type == "subflow") {
-        subflows.push({
-          name: n.name,
-          id: n.id,
-          checked: ""
-        });
-      }
-      if (n.type == "tab") {
-        tabs.push({
-          label: n.label,
-          id: n.id,
-          checked: ""
-        });
-      }
-    });
-    console.log("re_publishflows " + JSON.stringify(e, 2));
-  }
-  function getDefaultManifest() {
-    var man = {
-      subflows: subflows,
-      files: [],
-      tabs: tabs
-    };
-    man.subflows = JSON.parse(JSON.stringify(subflows));
-    man.tabs = JSON.parse(JSON.stringify(tabs));
-
-    // Get current folderitems from filesystem
-    var glob = require("glob");
-    return new Promise(function(resolve, reject) {
-      glob(projectFolder + '/**/*', function(err, files) {
-        if (err) {
-          console.log('Error', err);
-        } else {
-          var oFiles = [];
-          var aOmit = [];
-          aOmit.push(credFile.toLowerCase());
-          aOmit.push(flowFile.toLowerCase());
-          aOmit.push(projectFolder.toLowerCase() + "/package.json");
-          aOmit.push(projectFolder.toLowerCase() + "/manifest.html");
-          aOmit.push(projectFolder.toLowerCase() + "/manifest.js");
-          aOmit.push(projectFolder.toLowerCase() + "/readme.md");
-          aOmit.push(projectFolder.toLowerCase() + "/.git");
-          files.forEach(function(f) {
-            var S = require("string");
-            f = S(f);
-            var o = {
-              isDirectory: false,
-              name: f.getRightMost("/").toString(),
-              path: f.toString(),
-              id: f.delLeftMost("projects").delLeftMost(projectName).replaceAll("/", "-").replaceAll(".", "-").slugify().toString(),
-              checked: ""
-            };
-            var fs = require("fs");
-            if (fs.lstatSync(o.path).isDirectory()) {
-              o.isDirectory = true;
-            }
-            if (aOmit.indexOf(o.path.toLowerCase()) == -1) {
-              if (false == o.path.endsWith(".backup")) {
-                oFiles.push(o);
-              }
-            }
-          });
-          man.files = oFiles;
-          resolve(man);
-        }
-      });
-    });
-  }
-  function readManifestJS() {
-    return new Promise(function(resolve, reject) {
-      if (manifestFile == ""){
-        resolve({
-          subflows: subflows,
-          files: [],
-          tabs: tabs
+  // Furnish publishflows info to publish panel
+  RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
+    if (req.query.hasOwnProperty("project")) {
+      projectName = req.query.project;
+      projectFolder = RED.settings.userDir + "/projects/" + projectName;
+      if (fs.existsSync(projectFolder)) {
+        readManifestJS().then(function(publish) {
+          res.json(publish);
         });
       }else{
-        var S = require("string");
-        var fs = require("fs");
-        var sav = {
-          subflows: [],
-          files: [],
-          tabs: []
-        };
-        if (fs.existsSync(manifestFile + ".js")) {
-          var sCode = S(fs.readFileSync(manifestFile + ".js", 'utf8'));
-          sCode = sCode.delLeftMost("    RED.publishflows.manifests.push(\n");
-          sCode = sCode.getLeftMost("    );\n").toString();
+        res.status(404).end();
+      }
+    }else{
+	    res.status(404).end();
+    }
+  });
 
-          // Resolve userDir
-          sCode = S(sCode).replaceAll('"~', '"' + RED.settings.userDir).toString();
-          sav = JSON.parse(sCode);
-        }
+  function readManifestJS() {
+    return new Promise(function(resolve, reject) {
+      if (fs.existsSync(projectFolder + "/manifest.js")) {
+        var sCode = S(fs.readFileSync(projectFolder + "/manifest.js", 'utf8'));
+        sCode = sCode.delLeftMost("RED.publishflows.manifests.push(\n");
+        sCode = sCode.delRightMost(");\n").toString();
+        var sav = JSON.parse(sCode);
 
         // Merge default with saved; purge obsolete, irrelevant saved items
         getDefaultManifest().then(function(man) {
@@ -131,110 +54,162 @@ module.exports = function(RED) {
           });
           resolve(man);
         });
+      } else {
+        getDefaultManifest().then(function(man) {
+          resolve(man);
+        });
       }
     });
-  }
-  function writeManifestJS(publish) {
-    if (manifestFile == "") return;
-    var fs = require("fs");
-    if (JSON.stringify(publish).indexOf('"checked":"checked"') == -1) {
-      if (fs.existsSync(manifestFile + ".js")) {
-        fs.unlinkSync(manifestFile + ".js");
+  }  
+
+  function getDefaultManifest() {
+    // Get current subflows, tabs, and files
+    var man = {
+      subflows: [],
+      files: [],
+      tabs: [],
+      project: projectName
+    }
+    RED.nodes.eachNode(function(n) {
+      if (n.type == "subflow") {
+        man.subflows.push({
+          name: n.name,
+          id: n.id,
+          checked: ""
+        });
       }
-      if (fs.existsSync(manifestFile + ".html")) {
-        fs.unlinkSync(manifestFile + ".html");
+      if (n.type == "tab") {
+        man.tabs.push({
+          label: n.label,
+          id: n.id,
+          checked: ""
+        });
+      }
+    });
+
+    // Get current folderitems from filesystem    
+    return new Promise(function(resolve, reject) {
+      glob(projectFolder + '/**/*', function(err, files) {
+        if (err) {
+          console.log('Error', err);
+        } else {
+          // Omit credentials and flow files from listing
+          var oFiles = [];
+          var aOmit = [];
+          var package = JSON.parse(fs.readFileSync(projectFolder + "/package.json", 'utf8'));
+          aOmit.push(projectFolder.toLowerCase() + "/" + package["node-red"].settings.credentialsFile);
+          aOmit.push(projectFolder.toLowerCase() + "/" + package["node-red"].settings.flowFile);
+
+          // Omit package, manifest, readme.md, .git files/folders
+          aOmit.push(projectFolder.toLowerCase() + "/package.json");
+          aOmit.push(projectFolder.toLowerCase() + "/manifest.html");
+          aOmit.push(projectFolder.toLowerCase() + "/manifest.js");
+          aOmit.push(projectFolder.toLowerCase() + "/readme.md");
+          aOmit.push(projectFolder.toLowerCase() + "/.gitignore");
+          aOmit.push(projectFolder.toLowerCase() + "/.git");
+          files.forEach(function(f) {
+            f = S(f);
+            var o = {
+              isDirectory: false,
+              name: f.getRightMost("/").toString(),
+              path: f.toString(),
+              id: f.delLeftMost("projects").delLeftMost(projectName).replaceAll("/", "-").replaceAll(".", "-").slugify().toString(),
+              checked: ""
+            };
+            if (fs.lstatSync(o.path).isDirectory()) {
+              o.isDirectory = true;
+            }
+            // Omit .backup files too
+            if (aOmit.indexOf(o.path.toLowerCase()) == -1) {
+              if (false == o.path.endsWith(".backup")) {
+
+                // Mask user directory path
+                o.path = S(o.path).replaceAll(RED.settings.userDir, '~').toString();
+                oFiles.push(o);
+              }
+            }
+          });
+          man.files = oFiles;
+          resolve(man);
+        }
+      });
+    });
+  }
+
+  RED.httpAdmin.post("/publishflows", RED.auth.needsPermission("publishflows.write"), function(req, res) {
+    if (req.query.hasOwnProperty("project")) {
+      projectName = req.query.project;
+      projectFolder = RED.settings.userDir + "/projects/" + projectName;
+      if (fs.existsSync(projectFolder)) {
+        writeManifestJS(JSON.parse(JSON.stringify(req.body)));
+        res.send("{}");
+      }else{
+        res.status(404).end();
+      }
+    }else{
+	    res.status(404).end();
+    }
+    //
+    //res.send();
+  });
+
+  function writeManifestJS(man) {
+    if (man == "") return;
+
+    // Cleanup unnecessary manifest files if nothing is published
+    if (JSON.stringify(man).indexOf('"checked":"checked"') == -1) {
+      if (fs.existsSync(projectFolder + "/manifest.js")) {
+        fs.unlinkSync(projectFolder + "/manifest.js");
+      }
+      if (fs.existsSync(projectFolder + "/manifest.html")) {
+        fs.unlinkSync(projectFolder + "/manifest.html");
       }
       return;
     }
-    var S = require("string");
+
+    // Write manifest files
     var sCode = "";
     sCode += "/**\n";
     sCode += " * This code is machine generated.\n";
     sCode += " */\n";
-    sCode += "module.exports = function(RED) {\n";
-    sCode += "  if (typeof RED.publishflows != 'undefined') {\n";
-    sCode += "    RED.publishflows.manifests.push(\n";
-    sCode += S(JSON.stringify(publish, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
-    sCode += "\n    );\n";
-    sCode += "  }\n";
-    sCode += "};\n";
-
-    // Let's be multiuser friendly and swap userDir for ~
-    sCode = S(sCode).replaceAll('"' + RED.settings.userDir, '"~').toString();
-    fs.writeFileSync(manifestFile + ".js", sCode);
-    fs.writeFileSync(manifestFile + ".html", "<!-- silence is golden -->");
+    sCode += "if (typeof RED.publishflows == 'undefined') RED.publishflows = {};\n";
+    sCode += "if (typeof RED.publishflows.manifest == 'undefined') RED.publishflows.manifest = [];\n";
+    sCode += "RED.publishflows.manifests.push(\n";
+    sCode += S(JSON.stringify(man, null, 2)).replaceAll("\n", "\n  ").prepend("  ").toString();
+    sCode += "\n);\n";
+    fs.writeFileSync(projectFolder + "/manifest.js", sCode);
   }
-  function updatePackageFile(publish) {
-    /*
-     * Update the package.json file accordingly
-     */
-    if (projectFolder == "") return;
-    var fs = require("fs");
-    var jsonPackage = JSON.parse(fs.readFileSync(projectFolder + "/package.json"));
-    if (JSON.stringify(publish).indexOf('"checked":"checked"') == -1) {
-      // Remove existing definition
-      if (typeof jsonPackage["node-red"] != "undefined") {
-        if (typeof jsonPackage["node-red"]["nodes"] != "undefined") {
-          if (typeof jsonPackage["node-red"]["nodes"] != "undefined") {
-            if (typeof jsonPackage["node-red"]["nodes"][projectName] != "undefined") {
-              delete jsonPackage["node-red"]["nodes"][projectName];
-              if (JSON.stringify(jsonPackage["node-red"]["nodes"]) == "{}") {
-                delete jsonPackage["node-red"]["nodes"];
-                if (JSON.stringify(jsonPackage["node-red"]) == "{}") {
-                  delete jsonPackage["node-red"];
-                }
+
+  // JavaScript version of var_dump
+  function var_dump(arr, level) {
+      var dumped_text = "";
+      if (!level)
+          level = 0;
+
+      //The padding given at the beginning of the line.
+      var level_padding = "";
+      for (var j = 0; j < level + 1; j++)
+          level_padding += "    ";
+
+      if (typeof(arr) === 'object') { //Array/Hashes/Objects 
+          for (var item in arr) {
+              var value = arr[item];
+
+              if (typeof(value) === 'object') { //If it is an array,
+                  dumped_text += level_padding + "'" + item + "' ...\n";
+                  dumped_text += var_dump(value, level + 1);
+              } else {
+                  dumped_text += level_padding + "'" + item + "' => " + "(" + typeof(value) + ") \"" + value + "\"\n";
               }
-            }
           }
-        }
+      } else { //Stings/Chars/Numbers etc.
+          dumped_text = "(" + typeof(arr) + ") " + arr;
+          return dumped_text;
       }
-    }else{
-      // Create definition
-      if (typeof jsonPackage["node-red"] == "undefined") {
-        jsonPackage["node-red"] = {};
+      if (level===0){
+          return '(object)' + String.fromCharCode(10) + dumped_text;
+      }else{
+          return dumped_text;
       }
-      if (typeof jsonPackage["node-red"]["nodes"] == "undefined") {
-        jsonPackage["node-red"]["nodes"] = {};
-      }
-      if (typeof jsonPackage["node-red"]["nodes"][projectName] == "undefined") {
-        jsonPackage["node-red"]["nodes"][projectName] = "manifest.js";
-      }
-    }
-    fs.writeFileSync(projectFolder + "/package.json", JSON.stringify(jsonPackage, null, 2));
-    console.log("updatePackageFile");
   }
-  /*
-   * Furnish Publish tab with current subflows, files, tabs, and their associated
-   * settings in the manifest.js file.
-   */
-  RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
-    if (req.query.hasOwnProperty("project")) {
-      projectFolder = RED.settings.userDir + "/projects/" + req.query.project;
-      manifestFile = projectFolder + "/manifest";
-      projectName = req.query.project;
-      credFile = projectFolder + "/" + req.query.cred;
-      flowFile = projectFolder + "/" + req.query.flow;
-      readManifestJS().then(function(publish) {
-        res.json(publish);
-      });
-    }
-  });
-  RED.httpAdmin.post("/publishflows", RED.auth.needsPermission("publishflows.write"), function(req, res) {
-    writeManifestJS(JSON.parse(JSON.stringify(req.body)));
-
-    // Modify/update our manifest.js file before reloading
-    if (req.query.hasOwnProperty("reload")) {
-      var Project = require(RED.settings.coreNodesDir + "/../red/runtime/storage/localfilesystem/projects/Project.js");
-      var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/localfilesystem/projects/index.js");
-      var ap = projects.getActiveProject();
-      var name = ap.name;
-      readManifestJS().then(function(publish) {
-          // Modify our package.json before reloading
-          updatePackageFile(publish)
-      }).then(function() {
-        return projects.setActiveProject(null, name);
-      });
-    }
-  });
-  RED.events.on("runtime-event", re_publishflows);
 }
