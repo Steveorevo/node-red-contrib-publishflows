@@ -77,15 +77,21 @@
 </style>
 <script type="text/javascript">
   (function($) {
-    RED.events.on("editor:open", function() {
-      // Valid only if the project has node-red-contrib-publishflows as a dependency 
-      if (JSON.stringify(RED.projects.getActiveProject().dependencies).indexOf("node-red-contrib-publishflows") == -1) return;
+    function hasPublishFlows() {
+      // Check if the project has node-red-contrib-publishflows as a dependency 
+      return (JSON.stringify(
+        RED.projects.getActiveProject().dependencies).indexOf("node-red-contrib-publishflows") != -1
+      );
+    }
+    var man = null; // hold onto the manifest.js
 
+    RED.events.on("editor:open", function() {
+      if (false == hasPublishFlows()) return;
       setTimeout(function() {
         // Append Publish option to project settings
         var ul = $("#red-ui-tab-project-settings-tab-settings").parent();
         if (ul.length == 0) return;
-        
+
         // Append tab
         var html = '<li class="red-ui-tab" id="red-ui-tab-project-settings-tab-publish">';
         html += '<a href="#project-settings-tab-publish" class="red-ui-tab-label" title="Publish">';
@@ -180,7 +186,6 @@
         }); 
     
         // Query for subflows, files, and tabs
-        var man = null;
         $.ajax({
           url: "publishflows?project=" + encodeURI(RED.projects.getActiveProject().name),
           method: "GET",
@@ -216,10 +221,9 @@
           RED.notify(arguments[0]);
         });
 
-        // Intercept close panel button and save changes
+        // Intercept close panel button and save changes (editor:close is too late)
         $("#node-dialog-ok").click(function() {
-          if ($('li#red-ui-tab-project-settings-tab-publish').is(":hidden")) return; // Only if Publish is visible
-
+          if (false == hasPublishFlows()) return;
           var sav = JSON.parse(JSON.stringify(man));
           sav.subflows.forEach(function(s) {
             if ($("#project-settings-tab-publish #" + s.id.replace(/\./g,'-')).prop("checked")) {
