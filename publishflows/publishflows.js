@@ -15,15 +15,7 @@ module.exports = function(RED) {
   
   RED.events.on("runtime-event", function(e) {
     if ("runtime-deploy" != e.id) return;
-    // var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
-    // var ap = projects.getActiveProject();
-    // ap.package["node-red"].nodes = { "test2": "manifest.js"};
-    // projects.updateProject(null, ap.name, {}).then(function() {
-    //   console.log("project updated");
-    // }).catch(function(err){
-    //   console.log("Error in publishflows. " + err.message);
-    // });
-    // console.log("hello");
+    console.log("!!!publishflows deploy event!!!");
   });
 
   // Furnish publishflows info to publish panel
