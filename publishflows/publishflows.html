@@ -258,9 +258,9 @@
             method: "POST",
             data: sav
           }).done(function() {
-            RED.notify("The manifest.js file has been updated.",1);
+            RED.notify("The manifest.js and package.js files have been updated.",1);
           }).error(function() {
-            RED.notify("Error attempting to update manifest.js.");
+            RED.notify("Error attempting to update publishflows.");
           });
         });
       }, 1); // end setTimeout

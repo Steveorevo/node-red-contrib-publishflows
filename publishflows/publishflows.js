@@ -168,8 +168,11 @@ module.exports = function(RED) {
 
   function writeManifestJS(man) {
     if (man == "") return;
+    var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
+    var ap = projects.getActiveProject();
+    var dep = { "dependencies" : JSON.parse(JSON.stringify(ap.package['dependencies']))};
 
-    // Cleanup unnecessary manifest files if nothing is published
+    // Cleanup unnecessary manifest files and package.js if nothing is published
     if (JSON.stringify(man).indexOf('"checked":"checked"') == -1) {
       if (fs.existsSync(projectFolder + "/manifest.js")) {
         fs.unlinkSync(projectFolder + "/manifest.js");
@@ -177,6 +180,18 @@ module.exports = function(RED) {
       if (fs.existsSync(projectFolder + "/manifest.html")) {
         fs.unlinkSync(projectFolder + "/manifest.html");
       }
+      if (typeof ap.package["node-red"]["nodes"] != "undefined") {
+        if (typeof ap.package["node-red"]["nodes"][ap.name] != "undefined") {
+          delete ap.package["node-red"]["nodes"][ap.name];
+        }
+        if (JSON.stringify(ap.package["node-red"]["nodes"]) == "{}") {
+          delete ap.package["node-red"]["nodes"];
+        }
+      }
+
+      // Force package.js save & update
+      projects.updateProject(null, ap.name, {"dependencies":{}});
+      projects.updateProject(null, ap.name, dep);
       return;
     }
 
@@ -194,7 +209,14 @@ module.exports = function(RED) {
     sCode += "};\n";
     fs.writeFileSync(projectFolder + "/manifest.js", sCode);
     fs.writeFileSync(manifestFile + ".html", "<!-- silence is golden -->");
-    console.log(RED.nodes);
+
+    // Update package.js
+    if (typeof ap.package["node-red"]["nodes"] != "undefined") {
+      ap.package["node-red"]["nodes"] = {};
+    }
+    ap.package["node-red"]["nodes"][ap.name] = "manifest.js";
+    projects.updateProject(null, ap.name, {"dependencies":{}});
+    projects.updateProject(null, ap.name, dep);
   }
 
   // JavaScript version of var_dump
