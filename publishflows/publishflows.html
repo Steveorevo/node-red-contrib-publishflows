@@ -88,11 +88,13 @@
     RED.events.on("editor:open", function() {
       if (false == hasPublishFlows()) return;
       setTimeout(function() {
-        // Append Publish option to project settings
+        // Append merge publishflows button to dependency panel
+        var src = '<button id="mergepublishflows" class="editor-button editor-button-small" style="margin-top:10px;float: left;">merge publishflows</button>';
+        $('#project-settings-tab-deps button').before(src);
+
+        // Append Publish tab option to project settings
         var ul = $("#red-ui-tab-project-settings-tab-settings").parent();
         if (ul.length == 0) return;
-
-        // Append tab
         var html = '<li class="red-ui-tab" id="red-ui-tab-project-settings-tab-publish">';
         html += '<a href="#project-settings-tab-publish" class="red-ui-tab-label" title="Publish">';
         html += '<span class="bidiAware" dir="">Publish</span></a></li>';
@@ -134,6 +136,18 @@
           return html;
         }
         
+        // Implement merge publishflows behavior
+        $('button#mergepublishflows').click(function() {
+          // Query for subflows, files, and tabs
+            $.ajax({
+            url: "publishflows?merge=true",
+            method: "GET",
+            cache: false
+          }).error(function() {
+            RED.notify(arguments[0]);
+          });
+        });
+
         // Implement extended tab behavior
         ul.children("li").each(function() {
           $(this).on("mousedown", "a.red-ui-tab-label", function() {

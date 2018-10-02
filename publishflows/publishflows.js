@@ -5,6 +5,7 @@ module.exports = function(RED) {
    */
 
   // Requires
+  var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
   var glob = require("glob");
   var S = require("string");
   var fs = require("fs");
@@ -16,14 +17,21 @@ module.exports = function(RED) {
   RED.events.on("runtime-event", function(e) {
     if ("runtime-deploy" != e.id) return;
     var pf = RED.settings.functionGlobalContext.get("publishflows");
-    if (typeof pf != "undefined") return;
-
-    // Merge publishflows into this project
-    
   });
 
-  // Furnish publishflows info to publish panel
+  // Service merge publishflows button and publish panel
   RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
+
+    // Perform merge publishflows
+    if (req.query.hasOwnProperty("merge")) {
+      if (req.query.merge) {
+        mergePublishflows();
+        res.end();
+      }
+      return;
+    }
+
+    // Furnish publishflows info to publish panel
     if (req.query.hasOwnProperty("project")) {
       projectName = req.query.project;
       projectFolder = RED.settings.userDir + "/projects/" + projectName;
@@ -145,6 +153,20 @@ module.exports = function(RED) {
     });
   }
 
+  function mergePublishflows() {
+    var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
+    projects.getFlows().then(function() {
+      var sav = JSON.stringify(arguments[0]);
+      console.log(sav);
+      // if (s.indexOf("Test 1 Flow") != -1) {
+      //   // Update the flow and the user interface
+      //   s = S(s).replaceAll("Test 1 Flow", "Something Else Flow").toString();
+      //   console.log(s);
+      //   nodes.setFlows(JSON.parse(s));
+      // }
+    });
+  }
+
   RED.httpAdmin.post("/publishflows", RED.auth.needsPermission("publishflows.write"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
       projectName = req.query.project;
@@ -162,7 +184,6 @@ module.exports = function(RED) {
 
   function writeManifestJS(man) {
     if (man == "") return;
-    var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
     var ap = projects.getActiveProject();
     var dep = { "dependencies" : JSON.parse(JSON.stringify(ap.package['dependencies']))};
 
