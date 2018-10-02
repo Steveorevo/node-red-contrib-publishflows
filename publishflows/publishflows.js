@@ -12,10 +12,14 @@ module.exports = function(RED) {
   // Init vars
   var projectFolder = "";
   var projectName = "";
-  
+
   RED.events.on("runtime-event", function(e) {
     if ("runtime-deploy" != e.id) return;
-    console.log("!!!publishflows deploy event!!!");
+    var pf = RED.settings.functionGlobalContext.get("publishflows");
+    if (typeof pf != "undefined") return;
+
+    // Merge publishflows into this project
+    
   });
 
   // Furnish publishflows info to publish panel
@@ -39,8 +43,8 @@ module.exports = function(RED) {
     return new Promise(function(resolve, reject) {
       if (fs.existsSync(projectFolder + "/manifest.js")) {
         var sCode = S(fs.readFileSync(projectFolder + "/manifest.js", 'utf8'));
-        sCode = sCode.delLeftMost("RED.publishflows.manifests.push(\n");
-        sCode = sCode.delRightMost(");\n").toString();
+        sCode = sCode.delLeftMost("pf.push(");
+        sCode = sCode.delRightMost("  );").replaceAll("__dirname", '"~|~"').toString();
         var sav = JSON.parse(sCode);
 
         // Merge default with saved; purge obsolete, irrelevant saved items
@@ -73,7 +77,7 @@ module.exports = function(RED) {
       subflows: [],
       files: [],
       tabs: [],
-      project: projectName
+      path: "~|~"
     }
     RED.nodes.eachNode(function(n) {
       if (n.type == "subflow") {
@@ -186,16 +190,16 @@ module.exports = function(RED) {
     }
 
     // Write manifest files
-    var sCode = "";
-    sCode += "/**\n";
+    var sCode = "/**\n";
     sCode += " * This code is machine generated.\n";
     sCode += " */\n";
     sCode += "module.exports = function(RED) {\n";
-    sCode += "  if (typeof RED.publishflows != 'undefined') {\n";
-    sCode += "    RED.publishflows.manifests.push(\n";
-    sCode += S(JSON.stringify(man, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
-    sCode += "\n    );\n";
-    sCode += "  }\n";
+    sCode += "  var pf = RED.settings.functionGlobalContext.get(\"publishflows\");\n";
+    sCode += "  if (typeof pf == \"undefined\") pf = [];\n";
+    sCode += "  pf.push(\n";
+    sCode += S(JSON.stringify(man, null, 2)).replaceAll('"~|~"', "__dirname").replaceAll("\n", "\n    ").prepend("    ").toString();
+    sCode += "\n  );\n";
+    sCode += "  RED.settings.functionGlobalContext.set(\"publishflows\", pf);\n";
     sCode += "};\n";
     fs.writeFileSync(projectFolder + "/manifest.js", sCode);
     fs.writeFileSync(projectFolder + "/manifest.html", "<!-- silence is golden -->");
