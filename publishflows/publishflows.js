@@ -13,6 +13,19 @@ module.exports = function(RED) {
   var projectFolder = "";
   var projectName = "";
   
+  RED.events.on("runtime-event", function(e) {
+    if ("runtime-deploy" != e.id) return;
+    // var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
+    // var ap = projects.getActiveProject();
+    // ap.package["node-red"].nodes = { "test2": "manifest.js"};
+    // projects.updateProject(null, ap.name, {}).then(function() {
+    //   console.log("project updated");
+    // }).catch(function(err){
+    //   console.log("Error in publishflows. " + err.message);
+    // });
+    // console.log("hello");
+  });
+
   // Furnish publishflows info to publish panel
   RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
     if (req.query.hasOwnProperty("project")) {
@@ -172,12 +185,16 @@ module.exports = function(RED) {
     sCode += "/**\n";
     sCode += " * This code is machine generated.\n";
     sCode += " */\n";
-    sCode += "if (typeof RED.publishflows == 'undefined') RED.publishflows = {};\n";
-    sCode += "if (typeof RED.publishflows.manifest == 'undefined') RED.publishflows.manifest = [];\n";
-    sCode += "RED.publishflows.manifests.push(\n";
-    sCode += S(JSON.stringify(man, null, 2)).replaceAll("\n", "\n  ").prepend("  ").toString();
-    sCode += "\n);\n";
+    sCode += "module.exports = function(RED) {\n";
+    sCode += "  if (typeof RED.publishflows != 'undefined') {\n";
+    sCode += "    RED.publishflows.manifests.push(\n";
+    sCode += S(JSON.stringify(publish, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
+    sCode += "\n    );\n";
+    sCode += "  }\n";
+    sCode += "};\n";
     fs.writeFileSync(projectFolder + "/manifest.js", sCode);
+    fs.writeFileSync(manifestFile + ".html", "<!-- silence is golden -->");
+    console.log(RED.nodes);
   }
 
   // JavaScript version of var_dump
