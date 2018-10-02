@@ -162,8 +162,6 @@ module.exports = function(RED) {
     }else{
 	    res.status(404).end();
     }
-    //
-    //res.send();
   });
 
   function writeManifestJS(man) {
@@ -203,12 +201,12 @@ module.exports = function(RED) {
     sCode += "module.exports = function(RED) {\n";
     sCode += "  if (typeof RED.publishflows != 'undefined') {\n";
     sCode += "    RED.publishflows.manifests.push(\n";
-    sCode += S(JSON.stringify(publish, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
+    sCode += S(JSON.stringify(man, null, 2)).replaceAll("\n", "\n      ").prepend("      ").toString();
     sCode += "\n    );\n";
     sCode += "  }\n";
     sCode += "};\n";
     fs.writeFileSync(projectFolder + "/manifest.js", sCode);
-    fs.writeFileSync(manifestFile + ".html", "<!-- silence is golden -->");
+    fs.writeFileSync(projectFolder + "/manifest.html", "<!-- silence is golden -->");
 
     // Update package.js
     if (typeof ap.package["node-red"]["nodes"] != "undefined") {
