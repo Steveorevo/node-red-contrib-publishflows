@@ -209,7 +209,7 @@ module.exports = function(RED) {
     fs.writeFileSync(projectFolder + "/manifest.html", "<!-- silence is golden -->");
 
     // Update package.js
-    if (typeof ap.package["node-red"]["nodes"] != "undefined") {
+    if (typeof ap.package["node-red"]["nodes"] == "undefined") {
       ap.package["node-red"]["nodes"] = {};
     }
     ap.package["node-red"]["nodes"][ap.name] = "manifest.js";
