@@ -143,6 +143,10 @@
             url: "publishflows?merge=true",
             method: "GET",
             cache: false
+          }).done(function(msg) {
+            if (msg != '') {
+              RED.notify(msg);
+            }
           }).error(function() {
             RED.notify(arguments[0]);
           });

@@ -25,8 +25,9 @@ module.exports = function(RED) {
     // Perform merge publishflows
     if (req.query.hasOwnProperty("merge")) {
       if (req.query.merge) {
-        mergePublishflows();
-        res.end();
+        mergePublishflows().then(function(msg) {
+          res.send(msg).end();
+        });
       }
       return;
     }
@@ -42,7 +43,7 @@ module.exports = function(RED) {
       }else{
         res.status(404).end();
       }
-    }else{
+    } else {
 	    res.status(404).end();
     }
   });
@@ -154,23 +155,43 @@ module.exports = function(RED) {
   }
 
   function mergePublishflows() {
-    var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
-    projects.getFlows().then(function() {
-      var sav = JSON.stringify(arguments[0]);
-      var man = RED.settings.functionGlobalContext.get("publishflows");
-
-      // For each manifest.js, locate the flow file via it's package.js
-      man.forEach(function(m) {
-        var f = m.path + JSON.parse(fs.readFileSync(m.path + '/package.json', 'utf8'))['node-red']['settings']['flowFile'];
-        console.log(f);
-      });
-      //console.log(sav);
-      // if (s.indexOf("Test 1 Flow") != -1) {
-      //   // Update the flow and the user interface
-      //   s = S(s).replaceAll("Test 1 Flow", "Something Else Flow").toString();
-      //   console.log(s);
-      //   nodes.setFlows(JSON.parse(s));
-      // }
+    return new Promise(function(resolve, reject) {
+      var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
+      projects.getFlows().then(function() {
+        var sav = JSON.parse(JSON.stringify(arguments[0]));
+        var man = RED.settings.functionGlobalContext.get("publishflows");
+  
+        // Process each manifests file entry
+        man.forEach(function(m) {
+          var f = fs.readFileSync(m.path + '/package.json', 'utf8');
+          f = m.path + '/' + JSON.parse(f)['node-red']['settings']['flowFile'];
+          var pub = JSON.parse(fs.readFileSync(f, 'utf8'));
+          
+          // Process tabs
+          if (typeof m.tabs != "undefined") {
+  
+          }
+  
+          // Process subflows
+          if (typeof m.subflwos != "undefined") {
+  
+          }
+  
+          // Process files and folders
+          if (typeof m.files != "undefined") {
+  
+          }
+        });
+  
+        // Submit changes & notify update
+        if (JSON.stringify(sav) != JSON.stringify(arguments[0])) {
+          nodes.setFlows(sav).then(function() {
+            resolve('');
+          });
+        } else {
+          resolve('Publishflows are up to date.');
+        }
+      });  
     });
   }
 
@@ -181,10 +202,10 @@ module.exports = function(RED) {
       if (fs.existsSync(projectFolder)) {
         writeManifestJS(JSON.parse(JSON.stringify(req.body)));
         res.send("{}");
-      }else{
+      } else {
         res.status(404).end();
       }
-    }else{
+    } else {
 	    res.status(404).end();
     }
   });
@@ -203,8 +224,8 @@ module.exports = function(RED) {
         fs.unlinkSync(projectFolder + "/manifest.html");
       }
       if (typeof ap.package["node-red"]["nodes"] != "undefined") {
-        if (typeof ap.package["node-red"]["nodes"][ap.name] != "undefined") {
-          delete ap.package["node-red"]["nodes"][ap.name];
+        if (typeof ap.package["node-red"]["nodes"][ap.name + "_manifest"] != "undefined") {
+          delete ap.package["node-red"]["nodes"][ap.name + "_manifest"];
         }
         if (JSON.stringify(ap.package["node-red"]["nodes"]) == "{}") {
           delete ap.package["node-red"]["nodes"];
@@ -236,7 +257,7 @@ module.exports = function(RED) {
     if (typeof ap.package["node-red"]["nodes"] == "undefined") {
       ap.package["node-red"]["nodes"] = {};
     }
-    ap.package["node-red"]["nodes"][ap.name] = "manifest.js";
+    ap.package["node-red"]["nodes"][ap.name + "_manifest"] = "manifest.js";
     projects.updateProject(null, ap.name, {"dependencies":{}});
     projects.updateProject(null, ap.name, dep);
     var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
