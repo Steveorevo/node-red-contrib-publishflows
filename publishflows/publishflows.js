@@ -25,7 +25,7 @@ module.exports = function(RED) {
     // Perform merge publishflows
     if (req.query.hasOwnProperty("merge")) {
       if (req.query.merge) {
-        mergePublishflows().then(function(msg) {
+        mergePublishFlows().then(function(msg) {
           res.send(msg).end();
         });
       }
@@ -154,7 +154,7 @@ module.exports = function(RED) {
     });
   }
 
-  function mergePublishflows() {
+  function mergePublishFlows() {
     return new Promise(function(resolve, reject) {
       var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
       projects.getFlows().then(function() {
@@ -169,12 +169,51 @@ module.exports = function(RED) {
           
           // Process tabs
           if (typeof m.tabs != "undefined") {
-  
+            m.tabs.forEach(function(t) {
+              
+              // Remove existing
+              for (var n = 0; n < sav.length; n++) {
+                if (sav[n].id == t.id) {
+                  delete sav[n];
+                }else{
+                  if (typeof sav[n].z != "undefined") {
+                    if (sav[n].z == t.id) {
+                      delete sav[n];
+                    }
+                  }
+                }
+              }
+
+              // Re-index
+              var red = [];
+              for (var n = 0; n < sav.length; n++) {
+                if (typeof sav[n] != "undefined") {
+                  red.push(sav[n]);
+                }
+              }
+              sav = red;
+
+              // Insert update
+              for (var n = 0; n < pub.length; n++) {
+                if (pub[n].id == t.id) {
+                  sav.push(pub[n]);
+                }else{
+                  if (typeof pub[n].z != "undefined") {
+                    if (pub[n].z == t.id) {
+                      sav.push(pub[n]);
+                    }
+                  }
+                }
+                
+              }
+            });
           }
   
           // Process subflows
           if (typeof m.subflwos != "undefined") {
-  
+            m.subflows.forEach(function(s) {
+
+            });
           }
   
           // Process files and folders
@@ -189,7 +228,7 @@ module.exports = function(RED) {
             resolve('');
           });
         } else {
-          resolve('Publishflows are up to date.');
+          resolve('PublishFlows are up to date.');
         }
       });  
     });
