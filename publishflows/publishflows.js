@@ -14,10 +14,10 @@ module.exports = function(RED) {
   var projectFolder = "";
   var projectName = "";
 
-  RED.events.on("runtime-event", function(e) {
-    if ("runtime-deploy" != e.id) return;
-    var pf = RED.settings.functionGlobalContext.get("publishflows");
-  });
+  // RED.events.on("runtime-event", function(e) {
+  //   if ("runtime-deploy" != e.id) return;
+  //   var pf = RED.settings.functionGlobalContext.get("publishflows");
+  // });
 
   // Service merge publishflows button and publish panel
   RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
@@ -157,7 +157,14 @@ module.exports = function(RED) {
     var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
     projects.getFlows().then(function() {
       var sav = JSON.stringify(arguments[0]);
-      console.log(sav);
+      var man = RED.settings.functionGlobalContext.get("publishflows");
+
+      // For each manifest.js, locate the flow file via it's package.js
+      man.forEach(function(m) {
+        var f = m.path + JSON.parse(fs.readFileSync(m.path + '/package.json', 'utf8'))['node-red']['settings']['flowFile'];
+        console.log(f);
+      });
+      //console.log(sav);
       // if (s.indexOf("Test 1 Flow") != -1) {
       //   // Update the flow and the user interface
       //   s = S(s).replaceAll("Test 1 Flow", "Something Else Flow").toString();
@@ -232,6 +239,8 @@ module.exports = function(RED) {
     ap.package["node-red"]["nodes"][ap.name] = "manifest.js";
     projects.updateProject(null, ap.name, {"dependencies":{}});
     projects.updateProject(null, ap.name, dep);
+    var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
+    x = 0;
   }
 
   // JavaScript version of var_dump
