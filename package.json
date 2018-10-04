@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "string": "https://github.com/Steveorevo/string.js/archive/3.3.6.tar.gz",
+    "fs-extra": "^7.0.0",
     "glob": "^7.1.2"
   },
   "node-red": {
