@@ -6,6 +6,7 @@ module.exports = function(RED) {
 
   // Requires
   var projects = require(RED.settings.coreNodesDir + "/../red/runtime/storage/index.js").projects;
+  var fse = require("fs-extra");
   var glob = require("glob");
   var S = require("string");
   var fs = require("fs");
@@ -142,7 +143,7 @@ module.exports = function(RED) {
               if (false == o.path.endsWith(".backup")) {
 
                 // Mask user directory path
-                o.path = S(o.path).replaceAll(RED.settings.userDir, '~').toString();
+                o.path = S(o.path).substr(projectFolder.length).toString();
                 oFiles.push(o);
               }
             }
@@ -170,55 +171,105 @@ module.exports = function(RED) {
           // Process tabs
           if (typeof m.tabs != "undefined") {
             m.tabs.forEach(function(t) {
-              
-              // Remove existing
-              for (var n = 0; n < sav.length; n++) {
-                if (sav[n].id == t.id) {
-                  delete sav[n];
-                }else{
-                  if (typeof sav[n].z != "undefined") {
-                    if (sav[n].z == t.id) {
-                      delete sav[n];
+              if (t.checked == "checked") {
+                // Remove existing
+                for (var n = 0; n < sav.length; n++) {
+                  if (sav[n].id == t.id) {
+                    delete sav[n];
+                  }else{
+                    if (typeof sav[n].z != "undefined") {
+                      if (sav[n].z == t.id) {
+                        delete sav[n];
+                      }
                     }
                   }
                 }
-              }
 
-              // Re-index
-              var red = [];
-              for (var n = 0; n < sav.length; n++) {
-                if (typeof sav[n] != "undefined") {
-                  red.push(sav[n]);
+                // Re-index
+                var red = [];
+                for (var n = 0; n < sav.length; n++) {
+                  if (typeof sav[n] != "undefined") {
+                    red.push(sav[n]);
+                  }
                 }
-              }
-              sav = red;
+                sav = red;
 
-              // Insert update
-              for (var n = 0; n < pub.length; n++) {
-                if (pub[n].id == t.id) {
-                  sav.push(pub[n]);
-                }else{
-                  if (typeof pub[n].z != "undefined") {
-                    if (pub[n].z == t.id) {
-                      sav.push(pub[n]);
+                // Insert update
+                for (var n = 0; n < pub.length; n++) {
+                  if (pub[n].id == t.id) {
+                    sav.push(pub[n]);
+                  }else{
+                    if (typeof pub[n].z != "undefined") {
+                      if (pub[n].z == t.id) {
+                        sav.push(pub[n]);
+                      }
                     }
                   }
                 }
-                
               }
             });
           }
   
           // Process subflows
-          if (typeof m.subflwos != "undefined") {
+          if (typeof m.subflows != "undefined") {
             m.subflows.forEach(function(s) {
+              if (s.checked == "checked") {
+                // Remove existing
+                for (var n = 0; n < sav.length; n++) {
+                  if (sav[n].id == s.id) {
+                    delete sav[n];
+                  }else{
+                    if (typeof sav[n].z != "undefined") {
+                      if (sav[n].z == s.id) {
+                        delete sav[n];
+                      }
+                    }
+                  }
+                }
 
+                // Re-index
+                var red = [];
+                for (var n = 0; n < sav.length; n++) {
+                  if (typeof sav[n] != "undefined") {
+                    red.push(sav[n]);
+                  }
+                }
+                sav = red;
+
+                // Insert update
+                for (var n = 0; n < pub.length; n++) {
+                  if (pub[n].id == s.id) {
+                    sav.push(pub[n]);
+                  }else{
+                    if (typeof pub[n].z != "undefined") {
+                      if (pub[n].z == s.id) {
+                        sav.push(pub[n]);
+                      }
+                    }
+                  }
+                }
+              }
             });
           }
   
           // Process files and folders
           if (typeof m.files != "undefined") {
-  
+            m.files.forEach(function(f) {
+              if (f.checked == "checked") {
+                var des = projects.getActiveProject().path + f.path;
+                var src = m.path + f.path;
+
+                // Create directories if they don't exist
+                if (f.isDirectory == 'true') {
+                  fse.ensureDirSync(des);
+                }else{
+                  if (S(des).delRightMost("/") != "") {
+                    fse.ensureDirSync(S(des).delRightMost("/").toString());
+                  }
+                  fse.copyFileSync(src, des, {overwrite:true, errorOnExist:false});
+                }
+              }
+            });
           }
         });
   
