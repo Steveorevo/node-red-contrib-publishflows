@@ -1,19 +1,39 @@
 # node-red-contrib-publishflows
-PublishFlows allows developers to publish flows from their projects for use
-in other projects. Developers can publish flows specific to tabs, subflows, or
-arbitrary asset files.
+PublishFlows allows developers to publish flows from their 
+[projects](https://nodered.org/docs/user-guide/projects/) for use in other
+[projects](https://nodered.org/docs/user-guide/projects/). Developers can
+publish flows specific to tabs, subflows, or arbitrary asset files that
+live in the project's folder.
 
 Use the `Publish` option under project settings to define the parts of your
 project that you wish to make available to other projects. A project that wishes
-to use the published flows may simply list your project as a dependency.
+to use the published flows may simply list your project as a dependency. Use
+PublishFlows to:
+
+* Breakup complex projects into smaller sub-projects
+* Lock project dependencies to a specific version
+* Seperate test flows from runtime flows
+* Update projects independently
+* Make re-usable components
 
 ## How It Works
-A projects that lists another project as a dependency will automatically have
-the dependent project's defined components (tabs, subflows, arbitrary asset
-files) merged with the current project; overwriting any existing parts of the
-same I.D. Only the defined parts from the PublishFlows' project will be copied
-and merged. Users should avoid editing the given components as they will be
-overwritten with the dependency content.
+A project that lists another project as a dependency will automatically have
+it's predefined components (tabs, subflows, arbitrary asset files) merged into
+the current project; overwriting/updating any existing nodes that share the 
+same I.D. 
+
+Only the defined parts from the PublishFlows' project will be copied
+and merged. The defined parts are stored in the project folder within a file
+called manifest.js. The manifest file lists the components that are to be
+shared and used within other projects. Users of the dependent project should
+avoid editing the imported components as they will be overwritten with the
+dependency content.
+
+## Example Scenario
+For example, say you have produced a subflow that you would like to reuse in
+other projects. Simply [create a project](https://nodered.org/docs/user-guide/projects/)
+that houses your subflow; perhaps include an example tab that uses the subflow
+to illustrate it's use.
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
