@@ -26,6 +26,15 @@ down the dependency into multiple PublishFlow projects and dependencies. A
 dependency that requires elements from another project should list them as items
 to publish in their own "Publish" definition to avoid missing dependent elements.
 
+#### Don't Publish
+* Examples (if users want examples, they can always clone your project)
+* Unused actionflows (keep the namespace clean and tidy)
+
+#### Publish
+* Flows from dependencies that are needed to make your published flows work
+* Comment nodes giving credit to original authors
+* Flows that can be re-used in other projects
+
 ## Installation
 Run the following command in your Node-RED user directory (typically ~/.node-red):
 
