@@ -18,7 +18,7 @@ PublishFlows to:
 
 * Breakup complex projects into smaller sub-projects
 * Lock project dependencies to a specific version
-* Seperate test flows from runtime flows
+* Separate test flows from runtime flows
 * Update projects independently
 * Make re-usable components
 
@@ -45,7 +45,7 @@ node that prints "Hello World!" in the debug window. This subflow is maintained
 
 Simply [create a project](https://nodered.org/docs/user-guide/projects/)
 that houses your subflow; perhaps include an example tab that uses the subflow
-to illustrate it's use. We will only publish the subflow, not the example tab.
+to illustrate its use. We will only publish the subflow, not the example tab.
 Under Project Settings **(1)** from the right side menu or '...' Project info button,
 select the **(2)** Publish tab followed by **(3)** checkmarking the "Test Subflow".
 
@@ -59,6 +59,19 @@ manifest.js file listing the "Test Subflow" for others to use in their projects.
 ### Using the Example Scenario "Test Subflow" in Your Project
 Now you can use the "Test Subflow" in your own/multiple other projects; maintaining
 the original "Test Subflow" separately [within the project publishflows-test](http://github.com/steveorevo/publishflows-test).
+
+Create a new project and use the Project Settings menu option from the right side menu
+or click the '...' Project info button and select the Dependencies tab. From here, you
+may click the "edit" button to edit the list of project dependencies. The example
+publishflows-test project containing the subflow "Test Subflow" can be used in our
+own project by listing it in the dependencies section. 
+
+Because the publishflows-test project is hosted on github.com, we can use NodeJS'
+abbreviated format to list the item as a dependency. Your own github based projects
+can be easily referred to by just typing your username, forward slash, the project
+name, hashtag, master. I.e. [steveorevo/publishflows-test#master](https://github.com/steveorevo/publishflows-test)
+refers to our example dependency.
+
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
