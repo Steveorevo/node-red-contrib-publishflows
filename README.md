@@ -3,9 +3,9 @@ PublishFlows allows developers to publish flows from their
 [projects](https://nodered.org/docs/user-guide/projects/) for use in other
 [projects](https://nodered.org/docs/user-guide/projects/). Developers can
 publish flows specific to tabs, subflows, or arbitrary asset files that
-live in the project's folder. PublishFlows bring the concept found in
+live in the project's folder. PublishFlows brings the concept found in
 other programming languages often referred to as a ***requirement***,
-***include***, or ***dependency***.
+***include***, or ***dependency*** to Node-RED flows.
 
 Combined with [ActionFlows](https://flows.nodered.org/node/node-red-contrib-actionflows), 
 PublishFlows can allow developers to create more modular, extendable, and
@@ -59,8 +59,6 @@ manifest.js file listing the "Test Subflow" for others to use in their projects.
 ### Using the Example Scenario "Test Subflow" in Your Project
 Now you can use the "Test Subflow" in your own/multiple other projects; maintaining
 the original "Test Subflow" separately [within the project publishflows-test](http://github.com/steveorevo/publishflows-test).
-In other programming languages, this concept is often referred to as an ***include***,
-***requirement***, or ***dependency.
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
