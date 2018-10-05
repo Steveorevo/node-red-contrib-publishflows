@@ -32,16 +32,22 @@ dependency content.
 ## Example Scenario
 For example, say you have produced a subflow that you would like to reuse in
 other projects. Here we have created a subflow with an *inject* and *debug*
-node that prints "Hello World!" in the debug window. 
+node that prints "Hello World!" in the debug window.
+
+![Image of Subflow](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/subflow.jpg)
 
 Simply [create a project](https://nodered.org/docs/user-guide/projects/)
 that houses your subflow; perhaps include an example tab that uses the subflow
 to illustrate it's use. We will only publish the subflow, not the example tab.
-Under Project Settings (from the right side menu or '...' Project info button),
-select the Publish tab followed by checkmarking the "Test Subflow".
+Under Project Settings **(1)** from the right side menu or '...' Project info button,
+select the **(2)** Publish tab followed by **(3)** checkmarking the "Test Subflow".
 
-Clicking close will cause PublishFlows to automatically generate a manifest.js
-file listing the "Test Subflow". 
+![Image of project settings and publish tab](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/project-settings.jpg)
+
+Clicking **(4)** close will cause PublishFlows to automatically generate a **(5)**
+manifest.js file listing the "Test Subflow".
+
+![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/manifest.jpg)
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
