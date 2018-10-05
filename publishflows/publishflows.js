@@ -15,11 +15,6 @@ module.exports = function(RED) {
   var projectFolder = "";
   var projectName = "";
 
-  // RED.events.on("runtime-event", function(e) {
-  //   if ("runtime-deploy" != e.id) return;
-  //   var pf = RED.settings.functionGlobalContext.get("publishflows");
-  // });
-
   // Service merge publishflows button and publish panel
   RED.httpAdmin.get("/publishflows", RED.auth.needsPermission("publishflows.read"), function(req, res) {
 
@@ -168,7 +163,7 @@ module.exports = function(RED) {
           var f = fs.readFileSync(m.path + '/package.json', 'utf8');
           f = m.path + '/' + JSON.parse(f)['node-red']['settings']['flowFile'];
           var pub = JSON.parse(fs.readFileSync(f, 'utf8'));
-          
+
           // Check if manifest item is in this project's depedency list
           var isDependency = false;
           for (var key in dep) {
