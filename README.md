@@ -28,8 +28,8 @@ it's predefined components (tabs, subflows, arbitrary asset files) merged into
 the current project; overwriting/updating any existing nodes that share the 
 same I.D. 
 
-Only the defined parts from the PublishFlows' project will be copied
-and merged. The defined parts are stored in the project folder within a file
+Only the declared parts from the PublishFlows' project will be copied
+and merged. The declared parts are stored in the project folder within a file
 called manifest.js. The manifest file lists the components that are to be
 shared and used within other projects. Users of the dependent project should
 avoid editing the imported components as they will be overwritten with the
