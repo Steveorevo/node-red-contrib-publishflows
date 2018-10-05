@@ -161,115 +161,126 @@ module.exports = function(RED) {
       projects.getFlows().then(function() {
         var sav = JSON.parse(JSON.stringify(arguments[0]));
         var man = RED.settings.functionGlobalContext.get("publishflows");
-  
+        var dep = projects.getActiveProject().package.dependencies;
+
         // Process each manifests file entry
         man.forEach(function(m) {
           var f = fs.readFileSync(m.path + '/package.json', 'utf8');
           f = m.path + '/' + JSON.parse(f)['node-red']['settings']['flowFile'];
           var pub = JSON.parse(fs.readFileSync(f, 'utf8'));
           
-          // Process tabs
-          if (typeof m.tabs != "undefined") {
-            m.tabs.forEach(function(t) {
-              if (t.checked == "checked") {
-                // Remove existing
-                for (var n = 0; n < sav.length; n++) {
-                  if (sav[n].id == t.id) {
-                    delete sav[n];
-                  }else{
-                    if (typeof sav[n].z != "undefined") {
-                      if (sav[n].z == t.id) {
-                        delete sav[n];
-                      }
-                    }
-                  }
-                }
-
-                // Re-index
-                var red = [];
-                for (var n = 0; n < sav.length; n++) {
-                  if (typeof sav[n] != "undefined") {
-                    red.push(sav[n]);
-                  }
-                }
-                sav = red;
-
-                // Insert update
-                for (var n = 0; n < pub.length; n++) {
-                  if (pub[n].id == t.id) {
-                    sav.push(pub[n]);
-                  }else{
-                    if (typeof pub[n].z != "undefined") {
-                      if (pub[n].z == t.id) {
-                        sav.push(pub[n]);
-                      }
-                    }
-                  }
-                }
-              }
-            });
+          // Check if manifest item is in this project's depedency list
+          var isDependency = false;
+          for (var key in dep) {
+            if (key == S(m.path).getRightMost('/').toString()) {
+              isDependency = true;
+              break;
+            }
           }
-  
-          // Process subflows
-          if (typeof m.subflows != "undefined") {
-            m.subflows.forEach(function(s) {
-              if (s.checked == "checked") {
-                // Remove existing
-                for (var n = 0; n < sav.length; n++) {
-                  if (sav[n].id == s.id) {
-                    delete sav[n];
-                  }else{
-                    if (typeof sav[n].z != "undefined") {
-                      if (sav[n].z == s.id) {
-                        delete sav[n];
+          if (true == isDependency) {
+            // Process tabs
+            if (typeof m.tabs != "undefined") {
+              m.tabs.forEach(function(t) {
+                if (t.checked == "checked") {
+                  // Remove existing
+                  for (var n = 0; n < sav.length; n++) {
+                    if (sav[n].id == t.id) {
+                      delete sav[n];
+                    }else{
+                      if (typeof sav[n].z != "undefined") {
+                        if (sav[n].z == t.id) {
+                          delete sav[n];
+                        }
+                      }
+                    }
+                  }
+
+                  // Re-index
+                  var red = [];
+                  for (var n = 0; n < sav.length; n++) {
+                    if (typeof sav[n] != "undefined") {
+                      red.push(sav[n]);
+                    }
+                  }
+                  sav = red;
+
+                  // Insert update
+                  for (var n = 0; n < pub.length; n++) {
+                    if (pub[n].id == t.id) {
+                      sav.push(pub[n]);
+                    }else{
+                      if (typeof pub[n].z != "undefined") {
+                        if (pub[n].z == t.id) {
+                          sav.push(pub[n]);
+                        }
                       }
                     }
                   }
                 }
+              });
+            }
 
-                // Re-index
-                var red = [];
-                for (var n = 0; n < sav.length; n++) {
-                  if (typeof sav[n] != "undefined") {
-                    red.push(sav[n]);
+            // Process subflows
+            if (typeof m.subflows != "undefined") {
+              m.subflows.forEach(function(s) {
+                if (s.checked == "checked") {
+                  // Remove existing
+                  for (var n = 0; n < sav.length; n++) {
+                    if (sav[n].id == s.id) {
+                      delete sav[n];
+                    }else{
+                      if (typeof sav[n].z != "undefined") {
+                        if (sav[n].z == s.id) {
+                          delete sav[n];
+                        }
+                      }
+                    }
                   }
-                }
-                sav = red;
 
-                // Insert update
-                for (var n = 0; n < pub.length; n++) {
-                  if (pub[n].id == s.id) {
-                    sav.push(pub[n]);
-                  }else{
-                    if (typeof pub[n].z != "undefined") {
-                      if (pub[n].z == s.id) {
-                        sav.push(pub[n]);
+                  // Re-index
+                  var red = [];
+                  for (var n = 0; n < sav.length; n++) {
+                    if (typeof sav[n] != "undefined") {
+                      red.push(sav[n]);
+                    }
+                  }
+                  sav = red;
+
+                  // Insert update
+                  for (var n = 0; n < pub.length; n++) {
+                    if (pub[n].id == s.id) {
+                      sav.push(pub[n]);
+                    }else{
+                      if (typeof pub[n].z != "undefined") {
+                        if (pub[n].z == s.id) {
+                          sav.push(pub[n]);
+                        }
                       }
                     }
                   }
                 }
-              }
-            });
-          }
-  
-          // Process files and folders
-          if (typeof m.files != "undefined") {
-            m.files.forEach(function(f) {
-              if (f.checked == "checked") {
-                var des = projects.getActiveProject().path + f.path;
-                var src = m.path + f.path;
+              });
+            }
+    
+            // Process files and folders
+            if (typeof m.files != "undefined") {
+              m.files.forEach(function(f) {
+                if (f.checked == "checked") {
+                  var des = projects.getActiveProject().path + f.path;
+                  var src = m.path + f.path;
 
-                // Create directories if they don't exist
-                if (f.isDirectory == 'true') {
-                  fse.ensureDirSync(des);
-                }else{
-                  if (S(des).delRightMost("/") != "") {
-                    fse.ensureDirSync(S(des).delRightMost("/").toString());
+                  // Create directories if they don't exist
+                  if (f.isDirectory == 'true') {
+                    fse.ensureDirSync(des);
+                  }else{
+                    if (S(des).delRightMost("/") != "") {
+                      fse.ensureDirSync(S(des).delRightMost("/").toString());
+                    }
+                    fse.copyFileSync(src, des, {overwrite:true, errorOnExist:false});
                   }
-                  fse.copyFileSync(src, des, {overwrite:true, errorOnExist:false});
                 }
-              }
-            });
+              });
+            }
           }
         });
   
@@ -353,6 +364,9 @@ module.exports = function(RED) {
     var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
     x = 0;
   }
+  RED.nodes.registerType("publishflows",function(){
+    RED.nodes.createNode(this, config);
+  });
 
   // JavaScript version of var_dump
   function var_dump(arr, level) {
