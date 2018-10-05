@@ -81,7 +81,7 @@ cause unnecessary bulk, and/or may inhibit code reuse for the referring project.
 
 If components in a PublishFlows project are deemed optional; consider breaking
 down the dependency into multiple PublishFlow projects and dependencies. A
-dependency that requires elements from another project should list them as items
+dependency that requires elements from another project should re-list them as items
 to publish in their own "Publish" definition to avoid missing dependent elements.
 
 #### Don't Publish
