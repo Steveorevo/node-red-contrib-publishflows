@@ -77,21 +77,15 @@
 </style>
 <script type="text/javascript">
   (function($) {
-    function hasPublishFlows() {
-      // Check if the project has node-red-contrib-publishflows as a dependency 
-      return (JSON.stringify(
-        RED.projects.getActiveProject().dependencies).indexOf("node-red-contrib-publishflows") != -1
-      );
-    }
     var man = null; // hold onto the manifest.js
-
     RED.events.on("editor:open", function() {
-      if (false == hasPublishFlows()) return;
+      if ($('button#mergepublishflows').length > 0) return; // already added
       setTimeout(function() {
         // Append merge publishflows button to dependency panel
         var src = '<button id="mergepublishflows" class="editor-button editor-button-small" style="margin-top:10px;float: left;">merge publishflows</button>';
+        $('li#red-ui-tab-project-settings-tab-deps').css('z-index', 0); // bugfix tab floats over merge review panel
         $('#project-settings-tab-deps button').before(src);
-
+        
         // Append Publish tab option to project settings
         var ul = $("#red-ui-tab-project-settings-tab-settings").parent();
         if (ul.length == 0) return;
@@ -139,7 +133,7 @@
         // Implement merge publishflows behavior
         $('button#mergepublishflows').click(function() {
           // Query for subflows, files, and tabs
-            $.ajax({
+          $.ajax({
             url: "publishflows?merge=true",
             method: "GET",
             cache: false
@@ -241,7 +235,6 @@
 
         // Intercept close panel button and save changes (editor:close is too late)
         $("#node-dialog-ok").click(function() {
-          if (false == hasPublishFlows()) return;
           var sav = JSON.parse(JSON.stringify(man));
           sav.subflows.forEach(function(s) {
             if ($("#project-settings-tab-publish #" + s.id.replace(/\./g,'-')).prop("checked")) {
