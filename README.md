@@ -3,7 +3,13 @@ PublishFlows allows developers to publish flows from their
 [projects](https://nodered.org/docs/user-guide/projects/) for use in other
 [projects](https://nodered.org/docs/user-guide/projects/). Developers can
 publish flows specific to tabs, subflows, or arbitrary asset files that
-live in the project's folder.
+live in the project's folder. PublishFlows bring the concept found in
+other programming languages often referred to as a ***requirement***,
+***include***, or ***dependency***.
+
+Combined with [ActionFlows](https://flows.nodered.org/node/node-red-contrib-actionflows), 
+PublishFlows can allow developers to create more modular, extendable, and
+versatile designs to otherwise bulky and complex flows. 
 
 Use the `Publish` option under project settings to define the parts of your
 project that you wish to make available to other projects. A project that wishes
@@ -31,8 +37,9 @@ dependency content.
 
 ## Example Scenario
 For example, say you have produced a subflow that you would like to reuse in
-other projects. Here we have created a subflow with an *inject* and *debug*
-node that prints "Hello World!" in the debug window.
+other projects. Here we have created a subflow with an *inject* node and *debug*
+node that prints "Hello World!" in the debug window. This subflow is maintained
+[within the project called publishflows-test](http://github.com/steveorevo/publishflows-test).
 
 ![Image of Subflow](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/subflow.jpg)
 
@@ -45,9 +52,15 @@ select the **(2)** Publish tab followed by **(3)** checkmarking the "Test Subflo
 ![Image of project settings and publish tab](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/project-settings.jpg)
 
 Clicking **(4)** close will cause PublishFlows to automatically generate a **(5)**
-manifest.js file listing the "Test Subflow".
+manifest.js file listing the "Test Subflow" for others to use in their projects.
 
 ![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/manifest.jpg)
+
+### Using the Example Scenario "Test Subflow" in Your Project
+Now you can use the "Test Subflow" in your own/multiple other projects; maintaining
+the original "Test Subflow" separately [within the project publishflows-test](http://github.com/steveorevo/publishflows-test).
+In other programming languages, this concept is often referred to as an ***include***,
+***requirement***, or ***dependency.
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
