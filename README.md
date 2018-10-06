@@ -58,13 +58,15 @@ manifest.js file listing the "Test Subflow" for others to use in their projects.
 
 ### Using the Example Scenario "Test Subflow" in Your Project
 Now you can use the "Test Subflow" in your own/multiple other projects; maintaining
-the original "Test Subflow" separately [within the project publishflows-test](http://github.com/steveorevo/publishflows-test).
+the original "Test Subflow" separately within the project [publishflows-test](http://github.com/steveorevo/publishflows-test).
 
-Create a new project and use the Project Settings menu option from the right side menu
-or click the '...' Project info button and select the Dependencies tab. From here, you
-may click the "edit" button to edit the list of project dependencies. The example
+Create a new project. Use the Project Settings menu option from the right side menu
+or **(1)** click the '...' project info button and select the **(2)** Dependencies tab.
+Ensure you have PublishFlows installed, or add it as a dependency. From here, you may
+click the **(3)** "edit" button to edit the list of project dependencies. The example
 publishflows-test project containing the subflow "Test Subflow" can be used in our
-own project by listing it in the dependencies section. 
+own project by listing it in the dependencies section.
+
 
 Because the publishflows-test project is hosted on github.com, we can use NodeJS'
 abbreviated format to list the item as a dependency. Your own github based projects
