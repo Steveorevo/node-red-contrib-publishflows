@@ -39,7 +39,7 @@ dependency content.
 For example, say you have produced a subflow that you would like to reuse in
 other projects. Here we have created a subflow with an *inject* node and *debug*
 node that prints "Hello World!" in the debug window. This subflow is maintained
-[within the project called publishflows-test](http://github.com/steveorevo/publishflows-test).
+[within the project called pf-test](http://github.com/steveorevo/pf-test).
 
 ![Image of Subflow](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/subflow.jpg)
 
