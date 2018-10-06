@@ -52,7 +52,9 @@ select the **(2)** Publish tab followed by **(3)** checkmarking the "Test Subflo
 ![Image of project settings and publish tab](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/project-settings.jpg)
 
 Clicking **(4)** close will cause PublishFlows to automatically generate a **(5)**
-manifest.js file listing the "Test Subflow" for others to use in their projects.
+manifest.js file listing the "Test Subflow" for others to use in their projects. Additional
+changes are made to your project's package.json so that your project can be
+included as a dependency within Node-RED's Dependencies panel.
 
 ![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/manifest.jpg)
 
