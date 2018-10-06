@@ -1,4 +1,10 @@
 <style>
+  #project-settings-tab-deps .palette-module-publishflows > * {
+    color: #666;
+  }
+  #project-settings-tab-deps .palette-module-publishflows .fa-cubes {
+    color: #708870;
+  }
   #project-settings-tab-publish .publish-group-list-container ol .red-ui-editableList-item-content {
     padding: 5px 28px;
   }
@@ -130,7 +136,7 @@
           return html;
         }
         
-        // Implement merge publishflows behavior
+        // Implement merge publishflows button behavior
         $('button#mergepublishflows').click(function() {
           // Query for subflows, files, and tabs
           $.ajax({
@@ -138,7 +144,7 @@
             method: "GET",
             cache: false
           }).done(function(msg) {
-            if (msg != '') {
+            if (msg.trim() != '') {
               RED.notify(msg);
             }
           }).error(function() {
@@ -229,9 +235,70 @@
             name = indent + name;
             filesList.addItem({name:name, id:f.id, checked: f.checked});
           });
+          reviseDependencyList();
         }).error(function() {
           RED.notify(arguments[0]);
         });
+
+        // Update the list UI after user edits depedency list
+        var reviseDL = 0;
+        $('#project-settings-tab-deps ol').on('DOMSubtreeModified', function() {
+          if (man == null) return;
+          if (reviseDL != 0) clearTimeout(reviseDL);
+          reviseDL = setTimeout(reviseDependencyList, 1000);
+        });
+
+        // Check each dependency list item, update UI to reflect publishflows
+        function reviseDependencyList() {
+          $('#project-settings-tab-deps li').each(function() {
+            var name = $(this).find('.palette-module-name span').text();
+            if (man.publishFlows.indexOf(name) == -1) return;
+            if ($(this).find('.palette-module-header').hasClass('palette-module-publishflows')) return;
+              $(this).find('.palette-module-header')
+              .removeClass('palette-module-unused')
+              .addClass('palette-module-publishflows')
+              .find('i.fa-cube').removeClass('fa-cube')
+              .addClass('fa-cubes');
+
+            // Intercept remove from project on publishflows/manifest items
+            $(this).find('.palette-module-publishflows a.editor-button').mousedown(function() {
+              var removeButton = this;
+              var removeNotice = RED.notify("Removing this dependency from the project will remove any related PublishFlows.", {
+                modal: true,
+                fixed: true,
+                type: 'warning',
+                buttons: [
+                  {
+                    text: "Cancel",
+                    click: function(e) {
+                      removeNotice.close();
+                    }
+                  },
+                  {
+                    text: "Okay",
+                    class:"primary",
+                    click: function(e) {
+                      // Query for subflows, files, and tabs
+                      $.ajax({
+                        url: "publishflows?remove=" + name,
+                        method: "GET",
+                        cache: false
+                      }).done(function(msg) {
+                        if (msg.trim() != '') {
+                          RED.notify(msg);
+                        }
+                      }).error(function() {
+                        RED.notify(arguments[0]);
+                      });
+                      $(removeButton).click();
+                      removeNotice.close();
+                    }
+                  }
+                ]
+              });
+            });
+          });
+        }
 
         // Intercept close panel button and save changes (editor:close is too late)
         $("#node-dialog-ok").click(function() {
