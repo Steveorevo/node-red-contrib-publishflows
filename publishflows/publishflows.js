@@ -160,9 +160,11 @@ module.exports = function(RED) {
           // Furnish list of dependencies that are publishflows
           man.publishFlows = [];
           var pf = RED.settings.functionGlobalContext.get("publishflows");
-          pf.forEach(function(p) {
-            man.publishFlows.push(S(p.path).getRightMost("/").toString());
-          });
+          if (typeof pf != "undefined") {
+            pf.forEach(function(p) {
+              man.publishFlows.push(S(p.path).getRightMost("/").toString());
+            });
+          }
           resolve(man);
         }
       });
