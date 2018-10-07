@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-publishflows",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "PublishFlows allows projects to use other project parts as dependencies.",
   "author": "Stephen J. Carnam <steveorevo@gmail.com>",
   "license": "MIT",
