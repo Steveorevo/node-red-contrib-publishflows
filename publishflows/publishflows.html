@@ -245,7 +245,7 @@
         $('#project-settings-tab-deps ol').on('DOMSubtreeModified', function() {
           if (man == null) return;
           if (reviseDL != 0) clearTimeout(reviseDL);
-          reviseDL = setTimeout(reviseDependencyList, 1000);
+          reviseDL = setTimeout(reviseDependencyList, 500);
         });
 
         // Check each dependency list item, update UI to reflect publishflows
@@ -263,7 +263,7 @@
             // Intercept remove from project on publishflows/manifest items
             $(this).find('.palette-module-publishflows a.editor-button').mousedown(function() {
               var removeButton = this;
-              var removeNotice = RED.notify("Removing this dependency from the project will remove any related PublishFlows.", {
+              var removeNotice = RED.notify("Remove merged flows and assets from the PublishFlows dependency?", {
                 modal: true,
                 fixed: true,
                 type: 'warning',
@@ -275,7 +275,14 @@
                     }
                   },
                   {
-                    text: "Okay",
+                    text: "Keep",
+                    click: function(e) {
+                      $(removeButton).click();
+                      removeNotice.close();
+                    },
+                  },
+                  {
+                    text: "Remove",
                     class:"primary",
                     click: function(e) {
                       // Query for subflows, files, and tabs
