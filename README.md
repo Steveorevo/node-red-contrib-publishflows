@@ -16,6 +16,7 @@ project that you wish to make available to other projects. A project that wishes
 to use the published flows may simply list your project as a dependency. Use
 PublishFlows to:
 
+* Create templates and blueprints to jump start new projects
 * Breakup complex projects into smaller sub-projects
 * Lock project dependencies to a specific version
 * Separate test flows from runtime flows
@@ -69,12 +70,23 @@ click the **(3)** "edit" button to edit the list of project dependencies. The ex
 pf-test project containing the subflow "Test Subflow" can be used in our
 own project by listing it in the dependencies section.
 
+![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/dependencies.jpg)
 
 Because the pf-test project is hosted on github.com, we can use NodeJS'
 abbreviated format to list the item as a dependency. Your own github based projects
 can be easily referred to by just typing your username, forward slash, the project
 name, hashtag, master. I.e. [steveorevo/pf-test#master](https://github.com/steveorevo/pf-test)
-refers to our example dependency.
+refers to our example dependency:
+
+```
+{
+    "pf-test": "steveorevo/pf-test#master"
+}
+```
+
+Master refers to the main development branch in the github repo. However, you can
+lock or refer to a specific compatible release version following [NPM's documentation
+for the dependencies section](https://docs.npmjs.com/files/package.json#dependencies).
 
 
 ## What to Publish
