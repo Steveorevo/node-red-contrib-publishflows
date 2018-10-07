@@ -67,27 +67,35 @@ Create a new project. Use the Project Settings menu option from the right side m
 or **(1)** click the '...' project info button and select the **(2)** Dependencies tab.
 Ensure you have PublishFlows installed, or add it as a dependency. From here, you may
 click the **(3)** "edit" button to edit the list of project dependencies. The example
-pf-test project containing the subflow "Test Subflow" can be used in our
+[pf-test](http://github.com/steveorevo/pf-test) project containing the subflow "Test Subflow" can be used in our
 own project by listing it in the dependencies section.
 
 ![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/dependencies.jpg)
 
-Because the pf-test project is hosted on github.com, we can use NodeJS'
+Because the [pf-test](http://github.com/steveorevo/pf-test) project is hosted on github.com, we can use NodeJS'
 abbreviated format to list the item as a dependency. Your own github based projects
 can be easily referred to by just typing your username, forward slash, the project
 name, hashtag, master. I.e. [steveorevo/pf-test#master](https://github.com/steveorevo/pf-test)
-refers to our example dependency:
+refers to our example dependency. Type the dependency definition in the **(1)** textarea followed
+by clicking the **(2)** Done button (see image below).
 
-```
-{
-    "pf-test": "steveorevo/pf-test#master"
-}
-```
+![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/edit-depends.jpg)
 
 Master refers to the main development branch in the github repo. However, you can
 lock or refer to a specific compatible release version following [NPM's documentation
 for the dependencies section](https://docs.npmjs.com/files/package.json#dependencies).
 
+*Note: As of Node-RED version 0.19.4, you may encounter [a bug](https://github.com/node-red/node-red/issues/1908) whereby a newly listed dependency vanishes after clicking the **install** button. You can safely
+ignore this or close/re-open the Project Settings panel to refresh the list.*
+
+After listing all of your project's dependencies, you may click the **(1)** merge publishflows
+button as shown below; followed by clicking the **(2)** merge button in Node-RED's confirmation dialog.
+You can distinguish dependencies that use the PublishFlows node from other dependencies as
+they will appear with a different **(3)** green tinted icon. If all goes well, you should 
+now see the "Test Subflow" node in your project's sidebar. You've just created a project
+that uses another project as a dependency.
+
+![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/merge-publishflows.jpg)
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
