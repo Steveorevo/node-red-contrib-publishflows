@@ -70,7 +70,7 @@ click the **(3)** "edit" button to edit the list of project dependencies. The ex
 [pf-test](http://github.com/steveorevo/pf-test) project containing the subflow "Test Subflow" can be used in our
 own project by listing it in the dependencies section.
 
-![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/dependencies.jpg)
+![Image of dependencies](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/dependencies.jpg)
 
 Because the [pf-test](http://github.com/steveorevo/pf-test) project is hosted on github.com, we can use NodeJS'
 abbreviated format to list the item as a dependency. Your own github based projects
@@ -79,7 +79,7 @@ name, hashtag, master. I.e. [steveorevo/pf-test#master](https://github.com/steve
 refers to our example dependency. Type the dependency definition in the **(1)** textarea followed
 by clicking the **(2)** Done button (see image below).
 
-![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/edit-depends.jpg)
+![Image of editing dependencies](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/edit-depends.jpg)
 
 Master refers to the main development branch in the github repo. However, you can
 lock or refer to a specific compatible release version following [NPM's documentation
@@ -95,7 +95,19 @@ they will appear with a different **(3)** green tinted icon. If all goes well, y
 now see the "Test Subflow" node in your project's sidebar. You've just created a project
 that uses another project as a dependency.
 
-![Image of manifest notification](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/merge-publishflows.jpg)
+![Image of merge operation](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/merge-publishflows.jpg)
+
+### Removing a PublishFlows Project Dependency
+PublishFlows makes it easy to remove a PublishFlows based project dependency. Simply use Node-RED's native
+"remove from project" button under the dependencies panel of the project's settings. You
+will be prompted with a Node-RED confirmation dialog with three options: Cancel, Keep, and
+Remove. **Cancel**, simply ignores the operation. **Keep** allows you to keep the flows and/or files
+that were imported prior in the "merge publishflows" operation while removing the dependency
+listing in your package.json file. Lastly, **Remove** removes both the dependency from your project's
+package.json file and scans the dependency's manifest file to remove any assets (flows and/or files)
+from your current project.
+
+![Image of publishflows dependency removal](https://raw.githubusercontent.com/Steveorevo/node-red-contrib-publishflows/master/publishflows/demo/remove.jpg)
 
 ## What to Publish
 A PublishFlows project should only publish elements that it wishes to furnish to
