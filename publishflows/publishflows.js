@@ -21,8 +21,20 @@ module.exports = function(RED) {
     // Perform merge publishflows
     if (req.query.hasOwnProperty("merge")) {
       if (req.query.merge) {
-        mergePublishFlows().then(function(msg) {
+        mergePublishFlows(null).then(function(msg) {
           res.send(msg).end();
+        });
+      }
+      return;
+    }
+
+    // Perform remove of publishflows
+    if (req.query.hasOwnProperty("remove")) {
+      if (req.query.remove) {
+        removePublishFlow(req.query.remove).then(function(rmv) {
+          mergePublishFlows(rmv).then(function(msg) {
+            res.send(msg).end();
+          });
         });
       }
       return;
@@ -157,11 +169,119 @@ module.exports = function(RED) {
     });
   }
 
-  function mergePublishFlows() {
+  function removePublishFlow(pf) {
+    return new Promise(function(resolve, reject) {
+      projects.getFlows().then(function() {
+        var sav = JSON.parse(JSON.stringify(arguments[0]));
+        var man = RED.settings.functionGlobalContext.get("publishflows");
+        man.forEach(function(m) {
+          if (S(m.path).getRightMost("/") != pf) return;
+
+          // Remove related tabs
+          if (typeof m.tabs != "undefined") {
+            m.tabs.forEach(function(t) {
+              if (t.checked != "checked") return;
+
+              // Remove existing
+              for (var n = 0; n < sav.length; n++) {
+                if (sav[n].id == t.id) {
+                  delete sav[n];
+                }else{
+                  if (typeof sav[n].z != "undefined") {
+                    if (sav[n].z == t.id) {
+                      delete sav[n];
+                    }
+                  }
+                }
+              }
+
+              // Re-index
+              var red = [];
+              for (var n = 0; n < sav.length; n++) {
+                if (typeof sav[n] != "undefined") {
+                  red.push(sav[n]);
+                }
+              }
+              sav = red;
+            });
+          }
+
+          // Remove related subflows
+          if (typeof m.subflows != "undefined") {
+            m.subflows.forEach(function(s) {
+
+              // Remove existing
+              for (var n = 0; n < sav.length; n++) {
+                if (sav[n].id == s.id) {
+                  delete sav[n];
+                }else{
+                  if (typeof sav[n].z != "undefined") {
+                    if (sav[n].z == s.id) {
+                      delete sav[n];
+                    }else{
+
+                      // Remove subflow instances
+                      if (S(sav[n].type).getRightMost(":") == s.id) {
+                        delete sav[n];
+                      }
+                    }
+                  }
+                }
+              }
+
+              // Re-index
+              var red = [];
+              for (var n = 0; n < sav.length; n++) {
+                if (typeof sav[n] != "undefined") {
+                  red.push(sav[n]);
+                }
+              }
+              sav = red;
+            });
+          }
+
+          // Remove related files
+          if (typeof m.files != "undefined") {
+
+            // First pass, delete any defined files
+            m.files.forEach(function(f) {
+              if (f.checked != "checked") return;
+              if (f.isDirectory != 'true') {
+                var des = projects.getActiveProject().path + f.path;  
+                if (fs.existsSync(des)) {
+                  fs.unlinkSync(des);
+                }
+              }
+            });
+
+            // Second pass, delete any empty folders
+            m.files.forEach(function(f) {
+              if (f.checked != "checked") return;
+              if (f.isDirectory == 'true') {
+                var des = projects.getActiveProject().path + f.path;  
+                if (fs.existsSync(des)) {
+                  if (fs.readdirSync(des).length == 0) {
+                    fs.rmdirSync(des);
+                  }
+                }
+              }
+            });
+          }
+        });
+        resolve(sav);
+      });
+    });
+  }
+
+  function mergePublishFlows(rmv) {
     return new Promise(function(resolve, reject) {
       var nodes = require(RED.settings.coreNodesDir + "/../red/runtime/nodes/index.js");
       projects.getFlows().then(function() {
-        var sav = JSON.parse(JSON.stringify(arguments[0]));
+        if (rmv == null) {
+          var sav = JSON.parse(JSON.stringify(arguments[0]));
+        }else{
+          sav = rmv; // Use modified from prior removePublishFlow
+        }
         var man = RED.settings.functionGlobalContext.get("publishflows");
         var dep = projects.getActiveProject().package.dependencies;
 
@@ -183,38 +303,37 @@ module.exports = function(RED) {
             // Process tabs
             if (typeof m.tabs != "undefined") {
               m.tabs.forEach(function(t) {
-                if (t.checked == "checked") {
-                  // Remove existing
-                  for (var n = 0; n < sav.length; n++) {
-                    if (sav[n].id == t.id) {
-                      delete sav[n];
-                    }else{
-                      if (typeof sav[n].z != "undefined") {
-                        if (sav[n].z == t.id) {
-                          delete sav[n];
-                        }
+                if (t.checked != "checked") return;
+                // Remove existing
+                for (var n = 0; n < sav.length; n++) {
+                  if (sav[n].id == t.id) {
+                    delete sav[n];
+                  }else{
+                    if (typeof sav[n].z != "undefined") {
+                      if (sav[n].z == t.id) {
+                        delete sav[n];
                       }
                     }
                   }
+                }
 
-                  // Re-index
-                  var red = [];
-                  for (var n = 0; n < sav.length; n++) {
-                    if (typeof sav[n] != "undefined") {
-                      red.push(sav[n]);
-                    }
+                // Re-index
+                var red = [];
+                for (var n = 0; n < sav.length; n++) {
+                  if (typeof sav[n] != "undefined") {
+                    red.push(sav[n]);
                   }
-                  sav = red;
+                }
+                sav = red;
 
-                  // Insert update
-                  for (var n = 0; n < pub.length; n++) {
-                    if (pub[n].id == t.id) {
-                      sav.push(pub[n]);
-                    }else{
-                      if (typeof pub[n].z != "undefined") {
-                        if (pub[n].z == t.id) {
-                          sav.push(pub[n]);
-                        }
+                // Insert update
+                for (var n = 0; n < pub.length; n++) {
+                  if (pub[n].id == t.id) {
+                    sav.push(pub[n]);
+                  }else{
+                    if (typeof pub[n].z != "undefined") {
+                      if (pub[n].z == t.id) {
+                        sav.push(pub[n]);
                       }
                     }
                   }
@@ -225,38 +344,37 @@ module.exports = function(RED) {
             // Process subflows
             if (typeof m.subflows != "undefined") {
               m.subflows.forEach(function(s) {
-                if (s.checked == "checked") {
-                  // Remove existing
-                  for (var n = 0; n < sav.length; n++) {
-                    if (sav[n].id == s.id) {
-                      delete sav[n];
-                    }else{
-                      if (typeof sav[n].z != "undefined") {
-                        if (sav[n].z == s.id) {
-                          delete sav[n];
-                        }
+                if (s.checked != "checked") return;
+                // Remove existing
+                for (var n = 0; n < sav.length; n++) {
+                  if (sav[n].id == s.id) {
+                    delete sav[n];
+                  }else{
+                    if (typeof sav[n].z != "undefined") {
+                      if (sav[n].z == s.id) {
+                        delete sav[n];
                       }
                     }
                   }
+                }
 
-                  // Re-index
-                  var red = [];
-                  for (var n = 0; n < sav.length; n++) {
-                    if (typeof sav[n] != "undefined") {
-                      red.push(sav[n]);
-                    }
+                // Re-index
+                var red = [];
+                for (var n = 0; n < sav.length; n++) {
+                  if (typeof sav[n] != "undefined") {
+                    red.push(sav[n]);
                   }
-                  sav = red;
+                }
+                sav = red;
 
-                  // Insert update
-                  for (var n = 0; n < pub.length; n++) {
-                    if (pub[n].id == s.id) {
-                      sav.push(pub[n]);
-                    }else{
-                      if (typeof pub[n].z != "undefined") {
-                        if (pub[n].z == s.id) {
-                          sav.push(pub[n]);
-                        }
+                // Insert update
+                for (var n = 0; n < pub.length; n++) {
+                  if (pub[n].id == s.id) {
+                    sav.push(pub[n]);
+                  }else{
+                    if (typeof pub[n].z != "undefined") {
+                      if (pub[n].z == s.id) {
+                        sav.push(pub[n]);
                       }
                     }
                   }
@@ -267,25 +385,24 @@ module.exports = function(RED) {
             // Process files and folders
             if (typeof m.files != "undefined") {
               m.files.forEach(function(f) {
-                if (f.checked == "checked") {
-                  var des = projects.getActiveProject().path + f.path;
-                  var src = m.path + f.path;
+                if (f.checked != "checked") return;
+                var des = projects.getActiveProject().path + f.path;
+                var src = m.path + f.path;
 
-                  // Create directories if they don't exist
-                  if (f.isDirectory == 'true') {
-                    fse.ensureDirSync(des);
-                  }else{
-                    if (S(des).delRightMost("/") != "") {
-                      fse.ensureDirSync(S(des).delRightMost("/").toString());
-                    }
-                    fse.copyFileSync(src, des, {overwrite:true, errorOnExist:false});
+                // Create directories if they don't exist
+                if (f.isDirectory == 'true') {
+                  fse.ensureDirSync(des);
+                }else{
+                  if (S(des).delRightMost("/") != "") {
+                    fse.ensureDirSync(S(des).delRightMost("/").toString());
                   }
+                  fse.copyFileSync(src, des, {overwrite:true, errorOnExist:false});
                 }
               });
             }
           }
         });
-  
+
         // Submit changes & notify update
         if (JSON.stringify(sav) != JSON.stringify(arguments[0])) {
           nodes.setFlows(sav).then(function() {
