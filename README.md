@@ -25,7 +25,7 @@ PublishFlows to:
 
 ## How It Works
 A project that lists another project as a dependency will automatically have
-it's predefined components (tabs, subflows, arbitrary asset files) merged into
+its predefined components (tabs, subflows, arbitrary asset files) merged into
 the current project; overwriting/updating any existing nodes that share the 
 same I.D. 
 
@@ -91,7 +91,7 @@ ignore this or close/re-open the Project Settings panel to refresh the list.*
 After listing all of your project's dependencies, you may click the **(1)** merge publishflows
 button as shown below; followed by clicking the **(2)** merge button in Node-RED's confirmation dialog.
 You can distinguish dependencies that use the PublishFlows node from other dependencies as
-they will appear with a different **(3)** green tinted icon. If all goes well, you should 
+they will appear with a different **(3)** green tinted and pyramid cubed icon. If all goes well, you should 
 now see the "Test Subflow" node in your project's sidebar. You've just created a project
 that uses another project as a dependency.
 
